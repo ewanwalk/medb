@@ -2,7 +2,6 @@
 - Wait for the initial startup scan to finish before doing anything else
 - Speed up the insertion of new file entries
 - Fix a bug with storage not displaying correctly
-- Change audio to no longer be pass-through but ca_aac instead
 
 2.0.2
 - Fixed an issue with it looking like two encoding jobs were running (one was actually pending)
