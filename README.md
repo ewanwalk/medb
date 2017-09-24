@@ -45,6 +45,13 @@ determines the level of verbosity when logging, in order of verbosity (most to l
 - info (default)
 - error
 
+### **log path**
+option: `log_path`
+
+example: `log_path = "./medb.log"`
+
+if provided, will log output to the location provided as well as to stdout
+
 ### **paths**
 option: `[[path]]`
 
