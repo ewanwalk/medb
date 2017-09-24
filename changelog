@@ -1,0 +1,6 @@
+2.0.2
+- Fixed an issue with it looking like two encoding jobs were running (one was actually pending)
+- Fixed a crash when shutting down
+- Now delete the staging folder on shutdown
+- Add a validation phase on startup clearing out possible errors in the database (e.g. assume all jobs should not be running)
+- Fix a potential problem with a data race when scanning multiple directories
