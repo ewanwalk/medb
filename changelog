@@ -4,3 +4,5 @@
 - Now delete the staging folder on shutdown
 - Add a validation phase on startup clearing out possible errors in the database (e.g. assume all jobs should not be running)
 - Fix a potential problem with a data race when scanning multiple directories
+- Fix a bug with the web panel showing space saved on files that werent actually encoded
+- Remove days from elapsed as it shouldn't be needed
