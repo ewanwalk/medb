@@ -4,6 +4,7 @@
 # - debug
 # - error
 log_level = "info"
+log_path = ""
 
 # paths
 # a path block represents one category of media to watch, or used when you have seperate
@@ -82,7 +83,7 @@ cores = 2.0
 # the max number of encodes to do at one time
 # this acts as a multiplier to cores (e.g. cores = 2 x concurrency = 2 | 4 cores of actual usage)
 # default: 1
-cuncurrency = 1
+concurrency = 1
 
 # stating
 # the directory in which you want to use to stage the encodings
