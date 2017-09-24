@@ -1,0 +1,126 @@
+# log_level
+# there are multiple levels of logging, however the primary two you will need are the following:
+# - info (default)
+# - debug
+# - error
+log_level = "info"
+
+# paths
+# a path block represents one category of media to watch, or used when you have seperate
+# locations for your media. It is recommended that you use paths as a way to prioritize
+# encoding your media. As in the following example:
+#
+# /media/shows
+# /media/movies
+#
+# Taken the above you may specify the following paths:
+#
+# [[path]]
+# enabled = true                | true/false if you want this path to be monitored
+# directory = "/media/shows"    | the absolute path to the library you want to encode
+# priority = 1                  | priority of the encoder on this path (higher means more important)
+# quality = 21                  | the quality of the encode on this path, MIN: 15, MAX: 30, DEFAULT: 22
+# watch_interval = 500          | time in ms to poll for changes MIN: 100, MAX: 5000
+# [[path]]
+# enabled = true
+# directory = "/media/movies"
+# priority = 5
+# watch_interval = 500
+#
+# The above path settings indicate a priority in movies over shows, which is beneficial for seperating content
+# over providing a path that is limited to /media alone!
+[[path]]
+enabled = true
+directory = "./media/shows"
+priority = 1
+quality = 21
+watch_interval = 500
+minimum_size = "125MB"
+
+# general or generic settings
+[media]
+# extensions
+# file types to monitor, if you do not want to encode certain file types do not include them
+extensions = [
+  "mkv",
+  "mp4",
+  "avi",
+  "flv",
+  "m4v",
+  "mov",
+  "wmv",
+  "webm"
+]
+
+# encoder specific settings
+[encoder]
+# override
+# used to specify a different binary location
+# example:
+#   override = "/bin/handbrakecli"
+# useful for when you have a non-default installation
+override = ""
+
+# override_type
+# used to determine the type of override
+# options:
+#   handbrake
+#   ffmpeg
+# must be provided when override is present
+override_type = ""
+
+
+# cores
+# the number of cores to use when encoding, may be specified as one of the following:
+# a whole number - 2 (or 2 cores)
+# a float between 0.01 and 1 - 0.33 (33% of the cores available)
+# default: 0.33
+# minimum: 1 core
+cores = 2.0
+
+# conccurency
+# the max number of encodes to do at one time
+# this acts as a multiplier to cores (e.g. cores = 2 x concurrency = 2 | 4 cores of actual usage)
+# default: 1
+cuncurrency = 1
+
+# stating
+# the directory in which you want to use to stage the encodings
+# ########################
+# IMPORTANT
+# ########################
+# ensure the staging folder you provide has enough disk space to cover your largest files, e.g. if you have a file that is 20 GB
+# you want your staging folder to have enough disk space to store that file
+# example:
+#   /home/user/staging
+# default:
+#   ./staging
+staging = ""
+
+# overall database configuration
+[database]
+#TODO add an sqlite option (portable)
+# database type, (mysql/mariadb) / sqlite
+# default: mysql
+type = "mysql"
+
+# path
+# used for sqlite file location, leave empty for it to be generated relatively
+# default: ""
+path = ""
+
+# mysql username
+username = ""
+# mysql password
+password = ""
+# mysql hostname
+hostname = "localhost:3306"
+# mysql database name
+name = "mddb"
+
+
+# overall web server configuration
+[http]
+# port
+# the port in which we want to bind the web panel to
+port = "4000"
