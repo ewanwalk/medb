@@ -275,3 +275,7 @@ option: `port`
 example: `port = "4000"`
 
 determines the port in which we wish to bind to for the purposes of viewing the web dashboard, you may bind this to port `80` taken it is not already in use - in which case you may navigate to use `localhost` to view the dashboard.
+
+
+### A note on the source code
+Currently I have not open sourced this tool, mostly due to things not being where I really want them to be at present. Once I get things cleaned up and moved into a better format I may add all the source!
