@@ -85,7 +85,7 @@ cores = 2.0
 # default: 1
 concurrency = 1
 
-# stating
+# staging
 # the directory in which you want to use to stage the encodings
 # ########################
 # IMPORTANT
