@@ -1,3 +1,10 @@
+2.0.6
+- Fixed a bug with checksum not being calculated for the new file (after encode)
+- Fixed the dashboard showing files that aren't eligible for encoding
+- Added a missing sanity check for files which exist without a checksum but are the same size
+- Add a "Files Not Eligible" metric
+- Adjust existing metrics to remove files not eligible from files which could be encoded
+
 2.0.5
 - Fixed a bug with the incorrect value showing up for "files remaining" and "files total" on the dashboard
 - Fixed a bug where deleted files (offline deletions) were causing jobs to be held in limbo
