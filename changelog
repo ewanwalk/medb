@@ -1,3 +1,13 @@
+2.0.4
+- Fixed a bug with the dashboard not being able to handle negative (size increases) correctly
+- Display the enc.Compression as +/- % change (+/- file size) now
+- Display size on the finished table correctly
+- Display "Created" correctly as a formatted timestamp
+- Fixed a bug with the "Elapsed" time showing an incorrect value
+- Fixed a bug with compression / avg encode duration stats being calculated on the wrong values
+- Added a log file for the encoder workers (only keeping the current / last job run in the log file)
+- Change "Created" on the finished table to "Finished"
+
 2.0.3
 - Wait for the initial startup scan to finish before doing anything else
 - Speed up the insertion of new file entries
