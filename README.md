@@ -276,6 +276,36 @@ example: `port = "4000"`
 
 determines the port in which we wish to bind to for the purposes of viewing the web dashboard, you may bind this to port `80` taken it is not already in use - in which case you may navigate to use `localhost` to view the dashboard.
 
+---
+option: `username`
+
+example: `username = "myuser"`
+
+requirement: `password`
+
+determines the username used for authentication on the dashboard
+
+---
+option: `password`
+
+example: `password = "mypass"`
+
+requirement: `username`
+
+determines the password used for authentication on the dashboard
+
+---
+option: `ip_whitelist`
+
+example: 
+```
+ip_whitelist = [
+  "123.1.2.3",
+  "123.1.2.4
+]
+```
+
+restricts access to the dashboard via. an IP whitelist - does not work properly behind a reverse proxy (e.g. nginx) this may be changed in the future.
 
 ### A note on the source code
 Currently I have not open sourced this tool, mostly due to things not being where I really want them to be at present. Once I get things cleaned up and moved into a better format I may add all the source!
