@@ -1,3 +1,21 @@
+2.0.7
+- Fixed files remaining calculation
+- Fixed checksum not being properly set on some occasions
+- Add more detail to some logs
+- Add more error logs
+- Add error capturing on encoder jobs
+- Optimize service startup even further (should now start in a more constant time)
+- Add config option: http -> username
+- Add config option: http -> password
+- Add config option: http -> ip_whitelist
+- HTTP basic auth is supported currently but is not a perfect implementation.
+- Fix missing assets dashboard table
+- Add dynamic "version" to the dashboard
+- Add search / rows per page to queued table
+- Change default search on finished table to be by finished time
+- Refactor encoder backend
+- Added a link back to the github page for support
+
 2.0.6
 - Fixed a bug with checksum not being calculated for the new file (after encode)
 - Fixed the dashboard showing files that aren't eligible for encoding
