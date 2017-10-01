@@ -125,3 +125,20 @@ name = "mddb"
 # port
 # the port in which we want to bind the web panel to
 port = "4000"
+
+# username
+# the username used for basic authentication on the dashboard
+# example:
+#   username = "myuser"
+
+# password
+# the password used for basic authentication on the dashboard
+# example:
+#   password = "mypass"
+
+# ip_whitelist
+# a list of ips to accept traffic from
+# example: 
+# ip_whitelist = [
+#     "192.168.0.1"
+# ]
