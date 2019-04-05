@@ -4,7 +4,6 @@ import (
 	"encoder-backend/pkg/config"
 	"encoder-backend/pkg/models"
 	"github.com/Ewan-Walker/watcher"
-	"runtime"
 	"strings"
 )
 
@@ -17,21 +16,21 @@ const (
 	Delete
 )
 
-// TODO categorize events
 type Event interface {
 	Type() Type
 	Get() *models.File
 }
 
 type generic struct {
+	PathID int64
 	watcher.Event
 }
 
-func New(src watcher.Event) Event {
+func New(id int64, src watcher.Event) Event {
 
-	// TODO possibly initialize File here
 	g := generic{
-		Event: src,
+		PathID: id,
+		Event:  src,
 	}
 
 	switch src.Op {
