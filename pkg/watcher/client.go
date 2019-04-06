@@ -8,24 +8,41 @@ import (
 	"github.com/Ewan-Walker/gorm"
 	log "github.com/sirupsen/logrus"
 	"sync"
+	"time"
 )
 
 type Client struct {
 	db    *gorm.DB
 	paths []models.Path
+	wait  *sync.WaitGroup
 
 	mtx       sync.Mutex
 	listeners map[int64]*listener.Listener
 
-	stream chan events.Event
+	stream      chan events.Event
+	btx         sync.Mutex
+	subscribers map[string]int
+	streams     []chan<- events.Event
 }
+
+var (
+	instance *Client
+)
 
 func New() *Client {
 
+	if instance != nil {
+		return instance
+	}
+
 	c := &Client{
-		mtx:       sync.Mutex{},
-		listeners: make(map[int64]*listener.Listener, 0),
-		stream:    make(chan events.Event, 1024),
+		wait:        &sync.WaitGroup{},
+		mtx:         sync.Mutex{},
+		listeners:   make(map[int64]*listener.Listener, 0),
+		stream:      make(chan events.Event, 1024),
+		btx:         sync.Mutex{},
+		subscribers: make(map[string]int),
+		streams:     make([]chan<- events.Event, 0),
 	}
 
 	db, err := database.Connect()
@@ -35,9 +52,15 @@ func New() *Client {
 
 	c.db = db
 
+	go c.reload()
+
+	instance = c
+
 	return c
 }
 
+// Close
+// shuts down the watcher
 func (c *Client) Close() {
 
 	c.mtx.Lock()
@@ -47,6 +70,36 @@ func (c *Client) Close() {
 	c.mtx.Unlock()
 
 	close(c.stream)
+	c.wait.Wait()
+}
+
+// process all events
+func (c *Client) process() {
+	c.wait.Add(1)
+	defer c.wait.Done()
+
+	for ev := range c.stream {
+		for _, stream := range c.streams {
+			stream <- ev
+		}
+	}
+}
+
+// reload
+// periodically refreshes the available paths
+func (c *Client) reload() {
+
+	go c.process()
+
+	for {
+		select {
+		case <-time.After(1 * time.Minute):
+			err := c.load()
+			if err != nil {
+				log.WithError(err).Warn("watcher.client.reload: failed")
+			}
+		}
+	}
 }
 
 // load
@@ -92,6 +145,10 @@ func (c *Client) load() error {
 
 		l.Close()
 
+		log.WithFields(log.Fields{
+			"path": path.Directory,
+		}).Debug("watcher.client.load: removed path")
+
 		c.mtx.Lock()
 		delete(c.listeners, path.ID)
 		c.mtx.Unlock()
@@ -107,6 +164,8 @@ func (c *Client) load() error {
 			continue
 		}
 
+		measure := time.Now()
+
 		l := listener.New(
 			path,
 			listener.WithScanInterval(path.EventScanInterval),
@@ -114,6 +173,11 @@ func (c *Client) load() error {
 		)
 
 		l.PublishTo(c.stream)
+
+		log.WithFields(log.Fields{
+			"path":     path.Directory,
+			"duration": time.Since(measure),
+		}).Debug("watcher.client.load: added path")
 
 		c.mtx.Lock()
 		c.listeners[path.ID] = l
@@ -123,6 +187,22 @@ func (c *Client) load() error {
 	return nil
 }
 
-func (c *Client) Subscribe() chan events.Event {
-	return c.stream
+// Subscribe
+// add a new subscriber
+func (c *Client) Subscribe(name string, channel chan<- events.Event) {
+
+	c.btx.Lock()
+	_, ok := c.subscribers[name]
+	c.btx.Unlock()
+
+	if ok {
+		log.Warnf("watcher.client.subscribe: subscriber [%s] already subscribed", name)
+		return
+	}
+
+	c.streams = append(c.streams, channel)
+
+	c.btx.Lock()
+	c.subscribers[name] = len(c.streams) - 1
+	c.btx.Unlock()
 }
