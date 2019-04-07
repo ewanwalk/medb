@@ -1,5 +1,9 @@
 package config
 
+import (
+	"github.com/joho/godotenv"
+)
+
 const (
 	EnvLogLevel = "APP_LOG_LEVEL"
 
@@ -9,3 +13,7 @@ const (
 	EnvDBPort     = "DB_PORT"
 	EnvDBName     = "DB_NAME"
 )
+
+func init() {
+	_ = godotenv.Load()
+}
