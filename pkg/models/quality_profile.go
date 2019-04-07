@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/Ewan-Walker/gorm"
 	"time"
 )
 
@@ -20,14 +19,10 @@ type QualityProfile struct {
 	// The compression codec to use (e.g. x264, x265
 	Codec string `gorm:"type:varchar(50);not null;default:\"x264\""`
 	// The number (or percentage) of threads to use for this profile
-	Threads float64   `gorm:"type:double(4,2);not null;default:0.33"`
-	Created time.Time `gorm:"timestamp;not null;default:CURRENT_TIMESTAMP"`
-	Updated time.Time `gorm:"timestamp"`
+	Threads   float64   `gorm:"type:double(4,2);not null;default:0.33"`
+	CreatedAt time.Time `gorm:"timestamp;not null;default:CURRENT_TIMESTAMP"`
+	UpdatedAt time.Time `gorm:"timestamp"`
 
 	Paths   []Path
 	Encodes []Encode
-}
-
-func (q *QualityProfile) BeforeUpdate(scope *gorm.Scope) error {
-	return scope.SetColumn("Updated", time.Now().UTC())
 }

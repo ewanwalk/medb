@@ -21,15 +21,15 @@ const (
 
 type File struct {
 	ID            int64     `gorm:"AUTO_INCREMENT;primary_key"`
-	PathID        int64     `gorm:"type:int(11);not null"`
+	PathID        int64     `gorm:"type:int(11);not null;index"`
 	Name          string    `gorm:"type:varchar(255);not null"`
 	Size          int64     `gorm:"type:bigint(20);not null;default:0"`
 	Checksum      string    `gorm:"type:varchar(255);not null"`
 	Source        string    `gorm:"type:varchar(512);not null"`
-	Status        int64     `gorm:"type:int(2);default:1;index:media_status_idx"`
+	Status        int64     `gorm:"type:int(2);default:1;index"`
 	StatusEncoder int64     `gorm:"type:int(2);default:0"`
-	Created       time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP"`
-	Updated       time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
+	CreatedAt     time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP"`
+	UpdatedAt     time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
 
 	// Relationships
 	Encodes []Encode

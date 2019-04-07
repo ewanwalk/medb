@@ -3,6 +3,7 @@ package watcher
 import (
 	"encoder-backend/pkg/database"
 	"encoder-backend/pkg/models"
+	"encoder-backend/pkg/repeat"
 	"encoder-backend/pkg/watcher/events"
 	"encoder-backend/pkg/watcher/listener"
 	"github.com/Ewan-Walker/gorm"
@@ -52,7 +53,11 @@ func New() *Client {
 
 	c.db = db
 
-	go c.reload()
+	go c.process()
+
+	c.load()
+
+	go repeat.Every(15*time.Second, c.load)
 
 	instance = c
 
@@ -80,23 +85,11 @@ func (c *Client) process() {
 
 	for ev := range c.stream {
 		for _, stream := range c.streams {
-			stream <- ev
-		}
-	}
-}
-
-// reload
-// periodically refreshes the available paths
-func (c *Client) reload() {
-
-	go c.process()
-
-	for {
-		select {
-		case <-time.After(1 * time.Minute):
-			err := c.load()
-			if err != nil {
-				log.WithError(err).Warn("watcher.client.reload: failed")
+			select {
+			case stream <- ev:
+			default:
+				// send on closed channel (?)
+				continue
 			}
 		}
 	}
@@ -108,7 +101,7 @@ func (c *Client) load() error {
 
 	paths := make([]models.Path, 0)
 
-	err := c.db.Scopes(models.PathEnabled).Preload("QualityProfile").Find(paths).Error
+	err := c.db.Scopes(models.PathEnabled).Preload("QualityProfile").Find(&paths).Error
 	if err != nil {
 		return err
 	}

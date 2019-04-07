@@ -6,6 +6,7 @@ import (
 	"github.com/Ewan-Walker/watcher"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"time"
 )
 
 type Listener struct {
@@ -19,7 +20,10 @@ type Listener struct {
 func New(path models.Path, opts ...Option) *Listener {
 
 	l := &Listener{
-		path:    path,
+		path: path,
+		options: &options{
+			ScanInterval: 500 * time.Millisecond,
+		},
 		Watcher: watcher.New(),
 	}
 
@@ -31,9 +35,10 @@ func New(path models.Path, opts ...Option) *Listener {
 		return l
 	}
 
-	l.Watcher.FilterOps(
+	l.FilterOps(
 		watcher.Create, watcher.Remove, watcher.Rename, watcher.Move,
 	)
+	l.IgnoreHiddenFiles(true)
 
 	// apply custom options
 	for _, opt := range opts {
@@ -42,7 +47,37 @@ func New(path models.Path, opts ...Option) *Listener {
 
 	go l.listen()
 
+	log.WithField("path", path.Directory).Info("listener.new: adding path")
+
+	err = l.AddRecursive(path.Directory)
+	if err != nil {
+		log.WithError(err).
+			WithField("path", path.Directory).
+			Warn("listener.new: failed to add path")
+	}
+
+	// TODO determine if we want to disable "real-time" events and only run periodic scans
+	// TODO determine if we need to do a full scan periodically
+
+	go l.run()
+
+	go func() {
+		err := l.scan()
+		if err != nil {
+			log.WithError(err).Warn("listener: full directory scan failed")
+		}
+	}()
+
 	return l
+}
+
+func (l *Listener) run() {
+	err := l.Start(l.ScanInterval)
+	if err != nil {
+		log.WithError(err).
+			WithField("path", l.path.Directory).
+			Warn("listener.new: failed to start watcher")
+	}
 }
 
 // Close

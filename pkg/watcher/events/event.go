@@ -4,6 +4,7 @@ import (
 	"encoder-backend/pkg/config"
 	"encoder-backend/pkg/models"
 	"github.com/Ewan-Walker/watcher"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -14,6 +15,7 @@ const (
 	Move
 	Rename
 	Delete
+	Scan
 )
 
 type Event interface {
@@ -33,7 +35,15 @@ func New(id int64, src watcher.Event) Event {
 		Event:  src,
 	}
 
+	log.WithFields(log.Fields{
+		"path": id,
+		"op":   src.Op,
+		"file": src.FileInfo.Name(),
+	}).Debug("events.new")
+
 	switch src.Op {
+	case watcher.Chmod: // placeholder for a create due to initial scan
+		return scanned(g)
 	case watcher.Create:
 		return create(g)
 	case watcher.Move:
@@ -57,6 +67,7 @@ func (g *generic) Get() *models.File {
 	return &models.File{
 		Name:     g.FileInfo.Name(),
 		Size:     g.FileInfo.Size(),
+		PathID:   g.PathID,
 		Checksum: "",
 		Source:   strings.Join(path[0:len(path)-1], config.Separator),
 	}

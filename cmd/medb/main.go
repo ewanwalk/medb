@@ -1,6 +1,16 @@
-package medb
+package main
 
-import "encoder-backend/pkg/database"
+import (
+	"encoder-backend/pkg/database"
+	"encoder-backend/pkg/manager"
+	"encoder-backend/pkg/models"
+	log "github.com/sirupsen/logrus"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
+)
 
 var (
 	Version string
@@ -9,7 +19,43 @@ var (
 
 func main() {
 
-	database.Connect()
-	// TODO encoder again..
+	measure := time.Now()
+
+	log.WithFields(log.Fields{
+		"version": Version,
+		"build":   Build,
+	}).Info("runtime: starting")
+
+	preload()
+
+	client := manager.New()
+
+	wait := &sync.WaitGroup{}
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
+
+	wait.Add(1)
+	go func() {
+		defer wait.Done()
+		<-sig
+		log.Info("runtime: shutdown requested")
+	}()
+
+	log.WithField("duration", time.Since(measure)).Info("runtime: started")
+
+	wait.Wait()
+
+	client.Close()
+}
+
+func preload() {
+
+	database.Migrate(
+		models.Encode{},
+		models.File{},
+		models.Path{},
+		models.QualityProfile{},
+		models.Setting{},
+	)
 
 }
