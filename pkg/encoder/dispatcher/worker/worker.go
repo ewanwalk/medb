@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"github.com/Ewan-Walker/gorm"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -182,6 +184,12 @@ func (w *Worker) run(ctx context.Context) error {
 			return w.onJobCancel(err)
 		}
 
+		return w.onJobError(err)
+	}
+
+	// move encoded file back
+	err = os.Rename(w.job.Output(), filepath.Join(w.file.Source, w.file.Name))
+	if err != nil {
 		return w.onJobError(err)
 	}
 

@@ -102,3 +102,9 @@ func (e *Encode) Run(ctx context.Context) error {
 func (e *Encode) Report() Report {
 	return e.report
 }
+
+// Output
+// obtain the location of the staged file for this encode
+func (e *Encode) Output() string {
+	return e.handbrake.StagedFile()
+}
