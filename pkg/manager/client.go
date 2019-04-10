@@ -1,3 +1,5 @@
+// Package manager performs file management operations ensuring that files are being properly tracked
+// and account for.
 package manager
 
 import (
@@ -48,7 +50,7 @@ func New() *Client {
 
 	go c.listen()
 
-	// TODO this can be racy if multiple actions happen to a single file
+	// these were disabled as this can be racy if multiple actions happen to a single file
 
 	interval := 5 * time.Second
 	go repeat.Every(interval, c.createFunc())
@@ -95,7 +97,18 @@ func (c *Client) listen() {
 		}
 
 		if err != nil {
-			log.WithError(err).Warn("manager.client.listener: failed to process event")
+			log.WithFields(log.Fields{
+				"event": ev.Type().String(),
+				"file":  ev.Get().Name,
+			}).WithError(err).Warn("manager.client.listener: failed to process event")
+			continue
+		}
+
+		if ev.Type() != events.Scan {
+			log.WithFields(log.Fields{
+				"event": ev.Type().String(),
+				"file":  ev.Get().Name,
+			}).Debug("manager.client.listener: processed event")
 		}
 	}
 }

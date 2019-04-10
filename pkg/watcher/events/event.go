@@ -28,6 +28,21 @@ type generic struct {
 	watcher.Event
 }
 
+func (t Type) String() string {
+	switch t {
+	case Create:
+		return "create"
+	case Move:
+		return "move"
+	case Rename:
+		return "rename"
+	case Delete:
+		return "delete"
+	}
+
+	return ""
+}
+
 func New(id int64, src watcher.Event) Event {
 
 	g := generic{

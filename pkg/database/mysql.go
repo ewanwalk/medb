@@ -47,7 +47,22 @@ func Connect() (*gorm.DB, error) {
 		database = env
 	}
 
-	db, err := gorm.Open("mysql", CreateDSN(username, password, hostname, database, port))
+	db, err := gorm.Open("mysql", CreateDSN(username, password, hostname, "", port))
+	if err != nil {
+		return nil, err
+	}
+
+	// This could allow for SQL injection should someone have local access
+	qry := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", database)
+
+	// create a db if it doesnt exist
+	if err := db.Exec(qry).Error; err != nil {
+		return nil, err
+	}
+
+	db.Close()
+
+	db, err = gorm.Open("mysql", CreateDSN(username, password, hostname, database, port))
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +70,10 @@ func Connect() (*gorm.DB, error) {
 	db.DB().SetMaxOpenConns(25)
 	db.DB().SetMaxIdleConns(5)
 	db.DB().SetConnMaxLifetime(5 * time.Minute)
+
+	if env := os.Getenv(config.EnvDBDebug); len(env) != 0 {
+		db = db.Debug()
+	}
 
 	global = db
 

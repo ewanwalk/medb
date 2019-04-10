@@ -127,8 +127,20 @@ func (c *Client) load() error {
 
 	c.paths = paths
 
+	// remove any applicable paths
+	c.remove(remove...)
+
+	// start any new paths
+	c.add()
+
+	return nil
+}
+
+// remove
+// attempts to remove a path from the current instance
+func (c *Client) remove(paths ...models.Path) {
 	// shutdown non-existent paths
-	for _, path := range remove {
+	for _, path := range paths {
 		c.mtx.Lock()
 		l, ok := c.listeners[path.ID]
 		c.mtx.Unlock()
@@ -146,8 +158,13 @@ func (c *Client) load() error {
 		delete(c.listeners, path.ID)
 		c.mtx.Unlock()
 	}
+}
 
-	// start any new paths
+// add
+// validates that all current paths exist and are running
+// TODO there needs to be a way to tell if settings have changed in-case of a refresh (e.g. scanInterval changed)
+func (c *Client) add() {
+
 	for _, path := range c.paths {
 
 		c.mtx.Lock()
@@ -177,25 +194,4 @@ func (c *Client) load() error {
 		c.mtx.Unlock()
 	}
 
-	return nil
-}
-
-// Subscribe
-// add a new subscriber
-func (c *Client) Subscribe(name string, channel chan<- events.Event) {
-
-	c.btx.Lock()
-	_, ok := c.subscribers[name]
-	c.btx.Unlock()
-
-	if ok {
-		log.Warnf("watcher.client.subscribe: subscriber [%s] already subscribed", name)
-		return
-	}
-
-	c.streams = append(c.streams, channel)
-
-	c.btx.Lock()
-	c.subscribers[name] = len(c.streams) - 1
-	c.btx.Unlock()
 }

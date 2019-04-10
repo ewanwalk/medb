@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoder-backend/pkg/database"
+	"encoder-backend/pkg/encoder"
 	"encoder-backend/pkg/manager"
 	"encoder-backend/pkg/models"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +29,8 @@ func main() {
 
 	preload()
 
-	client := manager.New()
+	manage := manager.New()
+	encode := encoder.New()
 
 	wait := &sync.WaitGroup{}
 	sig := make(chan os.Signal, 1)
@@ -45,7 +47,8 @@ func main() {
 
 	wait.Wait()
 
-	client.Close()
+	manage.Close()
+	encode.Close()
 }
 
 func preload() {

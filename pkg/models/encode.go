@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/Ewan-Walker/gorm"
 	"time"
 )
 
@@ -30,8 +29,4 @@ type Encode struct {
 	NameAtEnd        string    `gorm:"type:varchar(255)"`
 	Error            string    `gorm:"type:varchar(255)"`
 	CreatedAt        time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP"`
-}
-
-func (e *Encode) BeforeUpdate(scope *gorm.Scope) error {
-	return scope.SetColumn("TimeEnd", time.Now().UTC())
 }

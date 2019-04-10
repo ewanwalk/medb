@@ -36,9 +36,9 @@ func (c *Client) delete(list ...events.Event) error {
 			Name: file.Name, Size: file.Size, PathID: file.PathID,
 		}).First(&temp)
 
-		err := c.db.Model(temp).Updates(map[string]interface{}{
-			"status": models.FileStatusDeleted,
-		}).Error
+		temp.Status = models.FileStatusDeleted
+
+		err := c.db.Save(&temp).Error
 		if err != nil {
 			return err
 		}

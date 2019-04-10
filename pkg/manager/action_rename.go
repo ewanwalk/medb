@@ -36,12 +36,12 @@ func (c *Client) rename(list ...events.Event) error {
 			Checksum: file.Checksum, PathID: file.PathID,
 		}).First(&temp)
 
-		err := c.db.Model(temp).Updates(map[string]interface{}{
-			"path_id": file.PathID,
-			"source":  file.Source,
-			"name":    file.Name,
-			"status":  models.FileStatusEnabled,
-		}).Error
+		temp.PathID = file.PathID
+		temp.Source = file.Source
+		temp.Name = file.Name
+		temp.Status = models.FileStatusEnabled
+
+		err := c.db.Save(&temp).Error
 		if err != nil {
 			return err
 		}

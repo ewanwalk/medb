@@ -17,7 +17,7 @@ const (
 type Path struct {
 	ID        int64     `gorm:"AUTO_INCREMENT;primary_key;"`
 	Name      string    `gorm:"type:varchar(255)"`
-	Directory string    `gorm:"type:varchar(1024);not null;unique_index"`
+	Directory string    `gorm:"type:varchar(1024);not null"`
 	Type      int64     `gorm:"type:int(11);not null;default:1"`
 	Status    int64     `gorm:"type:int(3);not null;default:1"`
 	Priority  int64     `gorm:"type:int(11);not null;default:1"`
