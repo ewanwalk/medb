@@ -176,7 +176,6 @@ func (w *Worker) run(ctx context.Context) error {
 
 	// execute job
 	err = w.job.Run(ctx)
-	w.logger.Info("CHECK A")
 	if err != nil {
 
 		if err == job.ErrCancelled || err == handbrake.ErrStagingDirectory {
@@ -185,9 +184,6 @@ func (w *Worker) run(ctx context.Context) error {
 
 		return w.onJobError(err)
 	}
-
-	// wait for the job to shutdown
-	//w.job.Wait()
 
 	// flag job as ended
 	return w.onJobEnd()
