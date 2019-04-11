@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/Ewan-Walker/gorm"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"time"
 )
@@ -67,6 +67,9 @@ func Connect() (*gorm.DB, error) {
 		return nil, err
 	}
 
+	// TODO determine if we prefer this
+	db.SetLogger(log.StandardLogger())
+
 	db.DB().SetMaxOpenConns(25)
 	db.DB().SetMaxIdleConns(5)
 	db.DB().SetConnMaxLifetime(5 * time.Minute)
@@ -81,14 +84,14 @@ func Connect() (*gorm.DB, error) {
 }
 
 func CreateDSN(username, password, hostname, database, port string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", username, password, hostname, port, database)
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci", username, password, hostname, port, database)
 }
 
 func Migrate(models ...interface{}) {
 	if global == nil {
 		_, err := Connect()
 		if err != nil {
-			logrus.WithError(err).Fatal("database: failed to connect")
+			log.WithError(err).Fatal("database: failed to connect")
 		}
 	}
 

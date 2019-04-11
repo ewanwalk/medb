@@ -4,7 +4,6 @@ import (
 	"encoder-backend/pkg/config"
 	"encoder-backend/pkg/models"
 	"github.com/Ewan-Walker/watcher"
-	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -49,12 +48,6 @@ func New(id int64, src watcher.Event) Event {
 		PathID: id,
 		Event:  src,
 	}
-
-	log.WithFields(log.Fields{
-		"path": id,
-		"op":   src.Op,
-		"file": src.FileInfo.Name(),
-	}).Debug("events.new")
 
 	switch src.Op {
 	case watcher.Chmod: // placeholder for a create due to initial scan

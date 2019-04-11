@@ -37,6 +37,10 @@ func (l *Listener) scan() error {
 
 		count++
 
+		if !l.IsAllowedExtension(info.Name()) {
+			return nil
+		}
+
 		l.emit(events.New(l.path.ID, watcher.Event{
 			Op:       watcher.Chmod,
 			Path:     current,

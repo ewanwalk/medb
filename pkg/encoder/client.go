@@ -6,11 +6,21 @@ type Client struct {
 	dispatch *dispatcher.Client
 }
 
+var (
+	global *Client
+)
+
 func New() *Client {
+
+	if global != nil {
+		return global
+	}
 
 	c := &Client{
 		dispatch: dispatcher.New(),
 	}
+
+	global = c
 
 	return c
 }
