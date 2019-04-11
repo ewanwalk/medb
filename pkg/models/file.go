@@ -56,6 +56,11 @@ func (f File) Exists() bool {
 		return false
 	}
 
+	sum, err := f.CurrentChecksum()
+	if err != nil || sum != f.Checksum {
+		return false
+	}
+
 	return true
 }
 

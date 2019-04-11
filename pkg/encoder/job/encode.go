@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoder-backend/pkg/models"
 	"errors"
+	"github.com/natefinch/lumberjack"
 	"io"
 	"path/filepath"
 	"syscall"
@@ -17,6 +18,12 @@ type Encode struct {
 
 var (
 	ErrCancelled = errors.New("cancelled encode job")
+	logger       = &lumberjack.Logger{
+		Filename:   "./handbrake.log",
+		MaxSize:    50,
+		MaxBackups: 3,
+		MaxAge:     28,
+	}
 )
 
 // New
@@ -65,10 +72,12 @@ func (e *Encode) Run(ctx context.Context) error {
 	}
 
 	read, write := io.Pipe()
-	cmd.Stdout = write
-	cmd.Stderr = write
 
-	//defer write.Close()
+	multi := io.MultiWriter(write, logger)
+
+	cmd.Stdout = multi
+	cmd.Stderr = multi
+
 	defer read.Close()
 
 	// run the command

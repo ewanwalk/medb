@@ -94,7 +94,7 @@ func (h *Command) parse() {
 	)
 
 	if len(h.profile.VideoTune) != 0 {
-		h.args = append(h.args, "--encoder-tune", h.profile.Codec)
+		h.args = append(h.args, "--encoder-tune", h.profile.VideoTune)
 	}
 
 	h.args = append(h.args, "-x", fmt.Sprintf("threads=%d", int(h.profile.Threads)))
