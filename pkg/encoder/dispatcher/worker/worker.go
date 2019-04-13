@@ -121,6 +121,7 @@ func (w *Worker) Start() {
 
 			backoff(true)
 
+			// TODO more advanced validation of eligibility on the file
 			// check to ensure the file still exists
 			if !w.file.Exists() {
 				w.file.Status = models.FileStatusDeleted

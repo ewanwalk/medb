@@ -69,18 +69,14 @@ func (f File) Exists() bool {
 func FileNeedsEncode(db *gorm.DB) *gorm.DB {
 
 	return db.Joins("left join paths on paths.id = files.path_id").
-		Joins(
-			"left join (?) AS e on e.file_id = files.id",
-			db.Table("encodes").
-				Select("file_id, status, checksum_at_end AS checksum").
-				Group("file_id").
-				Order("id DESC").
-				Limit(1).QueryExpr(),
+		Joins("left join encodes as e on e.file_id = files.id").
+		Where("e.id = (?) OR e.id is null",
+			db.Table("encodes").Select("MAX(id)").Where("file_id = files.id"),
 		).
 		Where("files.size >= paths.minimum_file_size").
 		Where("files.status = ?", FileStatusEnabled).
 		Where(
-			"(files.status_encoder = ? OR e.status = ?) OR files.checksum != e.checksum",
+			"((files.status_encoder = ? AND files.checksum != e.checksum_at_end) OR e.status = ?)",
 			FileEncodeStatusNotDone, EncodeCancelled,
 		).
 		Where("files.status_encoder <> ?", FileEncodeStatusErrored).

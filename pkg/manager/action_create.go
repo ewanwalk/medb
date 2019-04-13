@@ -22,8 +22,12 @@ func (c *Client) createFunc() func() error {
 
 func (c *Client) create(list ...events.Event) error {
 
+	// flag should on be trigger on initial scan not sub-sequent runtime scans
+	fromScan := false
+
 	if len(list) == 0 {
 		list = c.queues[events.Scan].Dequeue()
+		fromScan = true
 	}
 
 	if len(list) == 0 {
@@ -64,11 +68,19 @@ func (c *Client) create(list ...events.Event) error {
 				continue
 			}
 
+			file.StatusEncoder = found.StatusEncoder
+
+			// clear any potential issues with encode status
+			if fromScan && file.StatusEncoder == models.FileEncodeStatusRunning || file.StatusEncoder == models.FileEncodeStatusPending {
+				file.StatusEncoder = models.FileEncodeStatusNotDone
+			}
+
 			if found.Status == models.FileStatusDeleted || found.Source != file.Source {
 				file.ID = found.ID
 				updates = append(updates, *file)
 				continue
 			}
+
 		}
 	} else {
 
@@ -95,6 +107,13 @@ func (c *Client) create(list ...events.Event) error {
 				continue
 			}
 
+			file.StatusEncoder = found.StatusEncoder
+
+			// clear any potential issues with encode status
+			if fromScan && file.StatusEncoder == models.FileEncodeStatusRunning || file.StatusEncoder == models.FileEncodeStatusPending {
+				file.StatusEncoder = models.FileEncodeStatusNotDone
+			}
+
 			if found.Status == models.FileStatusDeleted || found.Source != file.Source {
 				file.ID = found.ID
 				updates = append(updates, *file)
@@ -118,10 +137,11 @@ func (c *Client) create(list ...events.Event) error {
 		for _, file := range updates {
 
 			err := c.db.Model(file).Updates(map[string]interface{}{
-				"path_id": file.PathID,
-				"source":  file.Source,
-				"name":    file.Name,
-				"status":  models.FileStatusEnabled,
+				"path_id":        file.PathID,
+				"source":         file.Source,
+				"name":           file.Name,
+				"status":         models.FileStatusEnabled,
+				"status_encoder": file.StatusEncoder,
 			}).Error
 			if err != nil {
 				return err
