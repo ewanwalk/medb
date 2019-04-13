@@ -23,13 +23,13 @@ const (
 )
 
 type File struct {
-	ID            int64     `gorm:"AUTO_INCREMENT;primary_key"`
+	ID            int64     `gorm:"AUTO_INCREMENT;primary_key" json:"id"`
 	PathID        int64     `gorm:"type:int(11);not null;index" json:"path_id"`
-	Name          string    `gorm:"type:varchar(255);not null"`
-	Size          int64     `gorm:"type:bigint(20);not null;default:0"`
-	Checksum      string    `gorm:"type:varchar(255);not null"`
-	Source        string    `gorm:"type:varchar(512);not null"`
-	Status        int64     `gorm:"type:int(2);default:1;index"`
+	Name          string    `gorm:"type:varchar(255);not null" json:"name"`
+	Size          int64     `gorm:"type:bigint(20);not null;default:0" json:"size"`
+	Checksum      string    `gorm:"type:varchar(255);not null" json:"checksum"`
+	Source        string    `gorm:"type:varchar(512);not null" json:"source"`
+	Status        int64     `gorm:"type:int(2);default:1;index" json:"status"`
 	StatusEncoder int64     `gorm:"type:int(2);default:0" json:"status_encoder"`
 	CreatedAt     time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt     time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at"`
@@ -71,7 +71,7 @@ func FileNeedsEncode(db *gorm.DB) *gorm.DB {
 	return db.Joins("left join paths on paths.id = files.path_id").
 		Joins("left join encodes as e on e.file_id = files.id").
 		Where("e.id = (?) OR e.id is null",
-			db.Table("encodes").Select("MAX(id)").Where("file_id = files.id"),
+			db.Table("encodes").Select("MAX(id)").Where("file_id = files.id").QueryExpr(),
 		).
 		Where("files.size >= paths.minimum_file_size").
 		Where("files.status = ?", FileStatusEnabled).
