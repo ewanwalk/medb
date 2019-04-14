@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	EnvBind     = "APP_BIND_INTERFACE"
 	EnvLogLevel = "APP_LOG_LEVEL"
 
 	EnvHandbrake = "APP_HANDBRAKE"

@@ -23,22 +23,20 @@ const (
 )
 
 type File struct {
-	ID            int64     `gorm:"AUTO_INCREMENT;primary_key" json:"id"`
-	PathID        int64     `gorm:"type:int(11);not null;index" json:"path_id"`
-	Name          string    `gorm:"type:varchar(255);not null" json:"name"`
-	Size          int64     `gorm:"type:bigint(20);not null;default:0" json:"size"`
-	Checksum      string    `gorm:"type:varchar(255);not null" json:"checksum"`
-	Source        string    `gorm:"type:varchar(512);not null" json:"source"`
-	Status        int64     `gorm:"type:int(2);default:1;index" json:"status"`
-	StatusEncoder int64     `gorm:"type:int(2);default:0" json:"status_encoder"`
-	CreatedAt     time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt     time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at"`
+	ID            int64      `gorm:"AUTO_INCREMENT;primary_key" json:"id,omitempty"`
+	PathID        int64      `gorm:"type:int(11);not null;index" json:"path_id,omitempty"`
+	Name          string     `gorm:"type:varchar(255);not null" json:"name,omitempty"`
+	Size          int64      `gorm:"type:bigint(20);not null;default:0" json:"size,omitempty"`
+	Checksum      string     `gorm:"type:varchar(255);not null" json:"checksum,omitempty"`
+	Source        string     `gorm:"type:varchar(512);not null" json:"source,omitempty"`
+	Status        int64      `gorm:"type:int(2);default:1;index" json:"status,omitempty"`
+	StatusEncoder int64      `gorm:"type:int(2);default:0" json:"status_encoder,omitempty"`
+	CreatedAt     *time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at,omitempty"`
+	UpdatedAt     *time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at,omitempty"`
 
 	// Relationships
-	// TODO potentially allow marshalling but will need a custom marshaller as we dont want this with a request for
-	// worker status
-	Encodes []Encode `json:"-"`
-	Path    Path     `gorm:"association_autoupdate:false" json:"-"`
+	Encodes []Encode `json:"encodes,omitempty"`
+	Path    *Path    `gorm:"association_autoupdate:false" json:"path,omitempty"`
 }
 
 // CurrentChecksum

@@ -37,7 +37,7 @@ func New(file *models.File) (*Encode, error) {
 	}
 
 	opts := []option{
-		withProfile(file.Path.QualityProfile),
+		withProfile(*file.Path.QualityProfile), // we dont want this process to potentially modify the profile
 	}
 
 	for _, opt := range opts {

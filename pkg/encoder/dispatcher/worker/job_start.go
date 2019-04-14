@@ -13,12 +13,14 @@ func (w *Worker) onJobStart() error {
 		return err
 	}
 
+	now := time.Now().UTC()
+
 	w.file.StatusEncoder = models.FileEncodeStatusRunning
 	w.file.Encodes = []models.Encode{
 		{
 			QualityProfileID: w.file.Path.QualityProfileID,
 			FileID:           w.file.ID,
-			TimeStart:        time.Now().UTC(),
+			TimeStart:        &now,
 			ChecksumAtStart:  checksum,
 			NameAtStart:      w.file.Name,
 			SizeAtStart:      w.file.Size,

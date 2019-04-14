@@ -3,6 +3,7 @@ package main
 import (
 	"encoder-backend/pkg/database"
 	"encoder-backend/pkg/encoder"
+	"encoder-backend/pkg/http"
 	"encoder-backend/pkg/manager"
 	"encoder-backend/pkg/models"
 	log "github.com/sirupsen/logrus"
@@ -29,6 +30,7 @@ func main() {
 
 	preload()
 
+	web := http.New()
 	manage := manager.New()
 	encode := encoder.New()
 
@@ -47,6 +49,7 @@ func main() {
 
 	wait.Wait()
 
+	web.Close()
 	manage.Close()
 	encode.Close()
 }

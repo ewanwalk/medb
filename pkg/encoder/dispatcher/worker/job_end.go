@@ -29,8 +29,9 @@ func (w *Worker) onJobEnd() error {
 	w.file.Encodes[0].ChecksumAtEnd = checksum
 	w.file.Encodes[0].NameAtEnd = w.file.Name
 	w.file.Encodes[0].SizeAtEnd = file.Size()
-	w.file.Encodes[0].TimeEnd = time.Now().UTC()
-	w.file.Encodes[0].Duration = int64(time.Since(w.file.Encodes[0].TimeStart) / time.Millisecond)
+	now := time.Now().UTC()
+	w.file.Encodes[0].TimeEnd = &now
+	w.file.Encodes[0].Duration = int64(time.Since(*w.file.Encodes[0].TimeStart) / time.Millisecond)
 
 	return w.db.Save(w.file).Error
 }
