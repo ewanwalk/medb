@@ -6,7 +6,7 @@ import (
 	"encoder-backend/pkg/encoder/job"
 	"encoder-backend/pkg/models"
 	"encoding/json"
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"

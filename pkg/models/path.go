@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 	"os"
 	"path/filepath"
 	"time"

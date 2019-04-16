@@ -4,7 +4,7 @@ import (
 	"encoder-backend/pkg/config"
 	"errors"
 	"fmt"
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 	"os"

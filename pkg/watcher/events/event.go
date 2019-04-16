@@ -3,7 +3,7 @@ package events
 import (
 	"encoder-backend/pkg/config"
 	"encoder-backend/pkg/models"
-	"github.com/Ewan-Walker/watcher"
+	"github.com/ewanwalk/watcher"
 	"strings"
 )
 

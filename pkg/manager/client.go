@@ -7,7 +7,7 @@ import (
 	"encoder-backend/pkg/repeat"
 	"encoder-backend/pkg/watcher"
 	"encoder-backend/pkg/watcher/events"
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"

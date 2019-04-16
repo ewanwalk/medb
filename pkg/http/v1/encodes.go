@@ -3,8 +3,8 @@ package v1
 import (
 	"encoder-backend/pkg/http/utils"
 	"encoder-backend/pkg/models"
-	"github.com/Ewan-Walker/gorm"
-	"github.com/Ewan-Walker/respond"
+	"github.com/ewanwalk/gorm"
+	"github.com/ewanwalk/respond"
 	"github.com/gorilla/mux"
 	"net/http"
 )

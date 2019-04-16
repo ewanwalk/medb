@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoder-backend/pkg/file"
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 	"os"
 	"path/filepath"
 	"time"

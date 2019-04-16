@@ -3,7 +3,7 @@ package v1
 import (
 	"encoder-backend/pkg/database"
 	"errors"
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )

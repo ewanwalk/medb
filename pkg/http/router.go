@@ -2,7 +2,7 @@ package http
 
 import (
 	"encoder-backend/pkg/http/v1"
-	"github.com/Ewan-Walker/respond"
+	"github.com/ewanwalk/respond"
 	"github.com/gorilla/mux"
 	"net/http"
 )

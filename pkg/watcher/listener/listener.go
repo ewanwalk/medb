@@ -3,7 +3,7 @@ package listener
 import (
 	"encoder-backend/pkg/models"
 	"encoder-backend/pkg/watcher/events"
-	"github.com/Ewan-Walker/watcher"
+	"github.com/ewanwalk/watcher"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"time"

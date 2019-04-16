@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 )
 
 func Dyanmic(model interface{}, request map[string]string) func(*gorm.DB) *gorm.DB {

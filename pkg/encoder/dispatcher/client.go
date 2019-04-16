@@ -4,7 +4,7 @@ import (
 	"encoder-backend/pkg/config"
 	"encoder-backend/pkg/database"
 	"encoder-backend/pkg/encoder/dispatcher/worker"
-	"github.com/Ewan-Walker/gorm"
+	"github.com/ewanwalk/gorm"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"

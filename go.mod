@@ -3,10 +3,10 @@ module encoder-backend
 go 1.12
 
 require (
-	github.com/Ewan-Walker/gorm v1.9.4-0.20190403002954-0a61d5910be4
-	github.com/Ewan-Walker/respond v1.0.3
-	github.com/Ewan-Walker/watcher v1.0.7
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
+	github.com/ewanwalk/gorm v1.9.4
+	github.com/ewanwalk/respond v1.0.3
+	github.com/ewanwalk/watcher v1.0.7
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gorilla/mux v1.7.1
 	github.com/jinzhu/gorm v1.9.2 // indirect
