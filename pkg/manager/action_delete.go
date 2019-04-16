@@ -36,6 +36,10 @@ func (c *Client) delete(list ...events.Event) error {
 			Name: file.Name, Size: file.Size, PathID: file.PathID,
 		}).First(&temp)
 
+		if file.Source != temp.Source {
+			continue
+		}
+
 		temp.Status = models.FileStatusDeleted
 
 		err := c.db.Save(&temp).Error

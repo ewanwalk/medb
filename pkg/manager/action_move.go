@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TODO this might have an issue if there are duplicate files
 func (c *Client) move(list ...events.Event) error {
 
 	//list := c.queues[events.Move].Dequeue()

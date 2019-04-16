@@ -3,6 +3,7 @@ package manager
 import (
 	"encoder-backend/pkg/models"
 	"encoder-backend/pkg/watcher/events"
+	"errors"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -13,6 +14,10 @@ type findKey struct {
 	Checksum string
 	//PathID   int64
 }
+
+var (
+	ErrDuplicateFile = errors.New("create.updateandcompare: duplicate file detected")
+)
 
 func (c *Client) createFunc() func() error {
 	return func() error {
@@ -52,15 +57,20 @@ func (c *Client) create(list ...events.Event) error {
 		}).Debug("manager.client.create: completed")
 	}()
 
-	// TODO what happens if a file has moved paths, we must re-assign the path
-	// TODO do we allow for duplicate files (?)
+	var err error
 
 	if len(list) < 25 {
 		for _, ev := range list {
 			file := ev.Get()
 			found := models.File{}
 
-			file.Checksum, _ = file.CurrentChecksum()
+			file.Checksum, err = file.CurrentChecksum()
+			// when we cannot compute the checksum we should send it to be re-evaluated
+			if err != nil {
+				c.queues[events.Scan].Enqueue(ev)
+				continue
+
+			}
 
 			c.db.Where("name = ? AND checksum = ?", file.Name, file.Checksum).First(&found)
 			if found.ID == 0 {
@@ -68,18 +78,12 @@ func (c *Client) create(list ...events.Event) error {
 				continue
 			}
 
-			file.StatusEncoder = found.StatusEncoder
-
-			// clear any potential issues with encode status
-			if fromScan && file.StatusEncoder == models.FileEncodeStatusRunning || file.StatusEncoder == models.FileEncodeStatusPending {
-				file.StatusEncoder = models.FileEncodeStatusNotDone
-			}
-
-			if found.Status == models.FileStatusDeleted || found.Source != file.Source {
-				file.ID = found.ID
-				updates = append(updates, *file)
+			err = updateAndCompare(fromScan, file, &found)
+			if err != nil {
 				continue
 			}
+
+			updates = append(updates, *file)
 
 		}
 	} else {
@@ -102,26 +106,30 @@ func (c *Client) create(list ...events.Event) error {
 				file.Name, file.Checksum, //file.PathID,
 			}]
 			if !ok {
-				file.Checksum, _ = file.CurrentChecksum()
+				file.Checksum, err = file.CurrentChecksum()
+				// when we cannot compute the checksum we should send it to be re-evaluated
+				if err != nil {
+					c.queues[events.Scan].Enqueue(ev)
+					continue
+
+				}
 				creates = append(creates, file)
 				continue
 			}
 
-			file.StatusEncoder = found.StatusEncoder
-
-			// clear any potential issues with encode status
-			if fromScan && file.StatusEncoder == models.FileEncodeStatusRunning || file.StatusEncoder == models.FileEncodeStatusPending {
-				file.StatusEncoder = models.FileEncodeStatusNotDone
+			err = updateAndCompare(fromScan, file, &found)
+			if err != nil {
+				continue
 			}
 
-			if found.Status == models.FileStatusDeleted || found.Source != file.Source {
-				file.ID = found.ID
-				updates = append(updates, *file)
-			}
+			updates = append(updates, *file)
 		}
 	}
 
 	if len(creates) != 0 {
+
+		log.WithField("create", creates[0]).Warn("yea")
+
 		qry := c.db.Model(creates[0]).CreateBatch(creates...)
 		if qry.Error != nil {
 			return qry.Error
@@ -151,6 +159,37 @@ func (c *Client) create(list ...events.Event) error {
 		updated = len(updates)
 
 	}
+
+	return nil
+}
+
+// updateAndCompare
+// checks the file and compares it with the "found" file from our records
+// returning nil when an update is due on the file
+func updateAndCompare(fromScan bool, file, found *models.File) error {
+
+	needsClear := fromScan && file.StatusEncoder == models.FileEncodeStatusRunning || file.StatusEncoder == models.FileEncodeStatusPending
+
+	if found.Status == models.FileStatusEnabled && found.Source == file.Source && !needsClear {
+		return errors.New("create.updateandcompare: update not needed")
+	}
+
+	if found.Source != file.Source && found.ExistsShallow() {
+		log.WithFields(log.Fields{
+			"file": file.Name,
+			"path": file.Source,
+		}).Warn("duplicate file detected, ignoring...")
+		return ErrDuplicateFile
+	}
+
+	file.StatusEncoder = found.StatusEncoder
+
+	// clear any potential issues with encode status
+	if needsClear {
+		file.StatusEncoder = models.FileEncodeStatusNotDone
+	}
+
+	file.ID = found.ID
 
 	return nil
 }

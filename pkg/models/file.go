@@ -49,13 +49,23 @@ func (f File) CurrentChecksum() (string, error) {
 // checks the filesystem to ensure the file still exists
 func (f File) Exists() bool {
 
-	_, err := os.Stat(filepath.Join(f.Source, f.Name))
-	if err != nil {
+	if !f.ExistsShallow() {
 		return false
 	}
 
 	sum, err := f.CurrentChecksum()
 	if err != nil || sum != f.Checksum {
+		return false
+	}
+
+	return true
+}
+
+// ExistsShallow
+// does a shallow check for file existence (only checking if the file exists on disk in the location known to us)
+func (f File) ExistsShallow() bool {
+	_, err := os.Stat(filepath.Join(f.Source, f.Name))
+	if err != nil {
 		return false
 	}
 
