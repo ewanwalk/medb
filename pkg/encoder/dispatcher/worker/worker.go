@@ -2,6 +2,8 @@ package worker
 
 import (
 	"context"
+	"encoder-backend/pkg/bus"
+	"encoder-backend/pkg/bus/message"
 	"encoder-backend/pkg/encoder/handbrake"
 	"encoder-backend/pkg/encoder/job"
 	"encoder-backend/pkg/models"
@@ -15,8 +17,14 @@ import (
 )
 
 const (
-	WorkerWaiting = iota
-	WorkerRunning
+	Waiting = iota
+	Running
+)
+
+const (
+	MessageStart = "worker.start"
+	MessageStop  = "worker.stop"
+	MessageTick  = "worker.tick"
 )
 
 type Worker struct {
@@ -103,6 +111,8 @@ func (w *Worker) Start() {
 
 	w.cancel = cancel
 
+	go w.tick(ctx)
+
 	backoff := w.backoff(ctx)
 
 	for {
@@ -130,6 +140,8 @@ func (w *Worker) Start() {
 				break
 			}
 
+			bus.Broadcast(message.Obj(MessageStart, *w.file))
+
 			err := w.run(ctx)
 			if err != nil {
 
@@ -148,7 +160,9 @@ func (w *Worker) Start() {
 		w.file = nil
 		w.mtx.Unlock()
 
-		w.status = WorkerWaiting
+		w.status = Waiting
+
+		bus.Broadcast(message.Obj(MessageStop, *w.file))
 	}
 
 }
@@ -166,7 +180,7 @@ func (w *Worker) run(ctx context.Context) error {
 	w.job = encode
 	w.mtx.Unlock()
 
-	w.status = WorkerRunning
+	w.status = Running
 
 	// flag job as started
 	if err := w.onJobStart(); err != nil {
@@ -196,6 +210,21 @@ func (w *Worker) run(ctx context.Context) error {
 
 	// flag job as ended
 	return w.onJobEnd()
+}
+
+func (w *Worker) tick(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(1 * time.Second):
+			if w.status != Running {
+				break
+			}
+
+			bus.Broadcast(message.Obj(MessageTick, w.report()))
+		}
+	}
 }
 
 // backoff
@@ -231,10 +260,8 @@ func (w *Worker) backoff(ctx context.Context) func(bool) {
 	}
 }
 
-// MarshalJSON
-// implement the json interface
-func (w Worker) MarshalJSON() ([]byte, error) {
-
+// report
+func (w Worker) report() map[string]interface{} {
 	data := map[string]interface{}{
 		"id":     w.id,
 		"status": w.status,
@@ -248,5 +275,11 @@ func (w Worker) MarshalJSON() ([]byte, error) {
 	}
 	w.mtx.Unlock()
 
-	return json.Marshal(data)
+	return data
+}
+
+// MarshalJSON
+// implement the json interface
+func (w Worker) MarshalJSON() ([]byte, error) {
+	return json.Marshal(w.report())
 }

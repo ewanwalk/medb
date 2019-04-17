@@ -2,32 +2,16 @@ package message
 
 import (
 	"encoder-backend/pkg/bus"
-	"encoding/json"
-	"time"
 )
 
 type Plain struct {
-	Name    string
-	Body    string
-	Created time.Time
+	Base
+	Body string `json:"body"`
 }
 
 func Text(name, body string) bus.Message {
 	return &Plain{
-		Name:    name,
-		Body:    body,
-		Created: time.Now().UTC(),
+		Base: fromBase(name),
+		Body: body,
 	}
-}
-
-func (t *Plain) Type() string {
-	return t.Name
-}
-
-func (t *Plain) MarshalJSON() ([]byte, error) {
-	return json.Marshal(t)
-}
-
-func (t *Plain) UnmarshalJSON(b []byte) error {
-	return json.Unmarshal(b, t)
 }

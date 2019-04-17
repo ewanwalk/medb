@@ -3,6 +3,8 @@
 package manager
 
 import (
+	"encoder-backend/pkg/bus"
+	"encoder-backend/pkg/bus/message"
 	"encoder-backend/pkg/database"
 	"encoder-backend/pkg/repeat"
 	"encoder-backend/pkg/watcher"
@@ -11,6 +13,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
+)
+
+const (
+	MessageEvent = "manager.event"
 )
 
 // TODO [integrity] periodic scan of files based on what we have in the database
@@ -105,6 +111,12 @@ func (c *Client) listen() {
 		}
 
 		if ev.Type() != events.Scan {
+
+			bus.Broadcast(message.Obj(MessageEvent, map[string]interface{}{
+				"event": ev.Type().String(),
+				"file":  *ev.Get(),
+			}))
+
 			log.WithFields(log.Fields{
 				"event": ev.Type().String(),
 				"file":  ev.Get().Name,
