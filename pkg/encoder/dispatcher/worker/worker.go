@@ -156,13 +156,13 @@ func (w *Worker) Start() {
 
 		}
 
+		bus.Broadcast(message.Obj(MessageStop, *w.file))
+
 		w.mtx.Lock()
 		w.file = nil
 		w.mtx.Unlock()
 
 		w.status = Waiting
-
-		bus.Broadcast(message.Obj(MessageStop, *w.file))
 	}
 
 }
