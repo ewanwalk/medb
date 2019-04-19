@@ -129,8 +129,6 @@ func (c *Client) create(list ...events.Event) error {
 
 	if len(creates) != 0 {
 
-		log.WithField("create", creates[0]).Warn("yea")
-
 		qry := c.db.Model(creates[0]).CreateBatch(creates...)
 		if qry.Error != nil {
 			return qry.Error

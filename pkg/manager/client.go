@@ -52,9 +52,10 @@ func New() *Client {
 
 	c.db = db
 
-	c.watcher.Subscribe("manager", c.events)
-
 	go c.listen()
+
+	c.watcher.Subscribe("manager", c.events)
+	c.watcher.Start()
 
 	// these were disabled as this can be racy if multiple actions happen to a single file
 

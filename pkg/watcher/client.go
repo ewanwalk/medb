@@ -53,15 +53,18 @@ func New() *Client {
 
 	c.db = db
 
+	instance = c
+
+	return c
+}
+
+func (c *Client) Start() {
+
 	go c.process()
 
 	c.load()
 
 	go repeat.Every(15*time.Second, c.load)
-
-	instance = c
-
-	return c
 }
 
 // Close
