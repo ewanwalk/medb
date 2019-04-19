@@ -79,6 +79,10 @@ func (p *Path) IsValid() map[string]string {
 		errs["minimum_file_size"] = "The minimum file"
 	}
 
+	if p.QualityProfileID == 0 {
+		errs["quality_profile"] = "The quality profile field is required"
+	}
+
 	return errs
 }
 

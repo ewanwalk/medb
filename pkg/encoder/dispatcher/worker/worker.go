@@ -82,7 +82,7 @@ func (w *Worker) next() *models.File {
 	txn.Scopes(models.FileNeedsEncode).Preload("Path.QualityProfile").First(&file)
 
 	// no file was found
-	if file.ID == 0 {
+	if file.ID == 0 || file.Path == nil || file.Path.QualityProfile == nil {
 		txn.Rollback()
 		return &models.File{}
 	}

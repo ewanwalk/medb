@@ -84,9 +84,9 @@ func FileNeedsEncode(db *gorm.DB) *gorm.DB {
 		Where("files.size >= paths.minimum_file_size").
 		Where("files.status = ?", FileStatusEnabled).
 		Where(
-			"((files.status_encoder = ? AND files.checksum != e.checksum_at_end) OR e.status = ?)",
+			"((files.status_encoder = ? AND (files.checksum != e.checksum_at_end OR e.checksum_at_end is null)) OR e.status = ?)",
 			FileEncodeStatusNotDone, EncodeCancelled,
 		).
-		Where("files.status_encoder <> ?", FileEncodeStatusErrored).
+		Where("files.status_encoder != ?", FileEncodeStatusErrored).
 		Order("paths.priority DESC")
 }
