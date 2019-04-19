@@ -87,6 +87,6 @@ func FileNeedsEncode(db *gorm.DB) *gorm.DB {
 			"((files.status_encoder = ? AND (files.checksum != e.checksum_at_end OR e.checksum_at_end is null)) OR e.status = ?)",
 			FileEncodeStatusNotDone, EncodeCancelled,
 		).
-		Where("files.status_encoder != ?", FileEncodeStatusErrored).
+		Where("files.status_encoder not in (?)", []int64{FileEncodeStatusPending, FileEncodeStatusErrored}).
 		Order("paths.priority DESC")
 }
