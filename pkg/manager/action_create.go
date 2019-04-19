@@ -102,17 +102,18 @@ func (c *Client) create(list ...events.Event) error {
 		for _, ev := range list {
 			file := ev.Get()
 
+			file.Checksum, err = file.CurrentChecksum()
+			// when we cannot compute the checksum we should send it to be re-evaluated
+			if err != nil {
+				c.queues[events.Scan].Enqueue(ev)
+				continue
+
+			}
+
 			found, ok := mappedFinds[findKey{
 				file.Name, file.Checksum, //file.PathID,
 			}]
 			if !ok {
-				file.Checksum, err = file.CurrentChecksum()
-				// when we cannot compute the checksum we should send it to be re-evaluated
-				if err != nil {
-					c.queues[events.Scan].Enqueue(ev)
-					continue
-
-				}
 				creates = append(creates, file)
 				continue
 			}
