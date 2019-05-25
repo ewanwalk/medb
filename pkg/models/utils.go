@@ -32,9 +32,18 @@ func Columns(model interface{}) map[string]string {
 
 	m := reflect.ValueOf(model).Type()
 	for i := 0; i < m.NumField(); i++ {
-		if tag := m.Field(i).Tag.Get("json"); len(tag) != 0 && tag != "-" {
+		field := m.Field(i)
+		if tag := field.Tag.Get("json"); len(tag) != 0 && tag != "-" {
+
+			name := field.Type.Name()
+			if field.Type.Kind().String() == "ptr" {
+				name = field.Type.Elem().Name()
+			}
+
 			if idx := strings.Index(tag, ","); idx > 0 {
-				columns[tag[:idx]] = m.Field(i).Type.Name()
+				columns[tag[:idx]] = name
+			} else {
+				columns[tag] = name
 			}
 		}
 	}

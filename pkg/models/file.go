@@ -29,8 +29,8 @@ type File struct {
 	Size          int64      `gorm:"type:bigint(20);not null;default:0" json:"size,omitempty"`
 	Checksum      string     `gorm:"type:varchar(255);not null" json:"checksum,omitempty"`
 	Source        string     `gorm:"type:varchar(512);not null" json:"source,omitempty"`
-	Status        int64      `gorm:"type:int(2);default:1;index" json:"status,omitempty"`
-	StatusEncoder int64      `gorm:"type:int(2);default:0" json:"status_encoder,omitempty"`
+	Status        int64      `gorm:"type:int(2);default:1;index" json:"status"`
+	StatusEncoder int64      `gorm:"type:int(2);default:0" json:"status_encoder"`
 	CreatedAt     *time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at,omitempty"`
 	UpdatedAt     *time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at,omitempty"`
 

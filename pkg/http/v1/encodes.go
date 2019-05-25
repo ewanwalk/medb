@@ -23,13 +23,19 @@ func getEncodes(w http.ResponseWriter, r *http.Request) {
 	params := utils.Vars(r)
 
 	encodes := make([]models.Encode, 0)
+	count := 0
 
-	if err := db.Scopes(models.Dyanmic(models.Encode{}, params)).Find(&encodes).Error; err != nil {
+	if err := db.Scopes(models.Dynamic(models.Encode{}, params)).Find(&encodes).Error; err != nil {
 		respond.With(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	respond.With(w, r, http.StatusOK, encodes)
+	if err := db.Scopes(models.DynamicTotal(models.Encode{}, params)).Count(&count).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.With(w, r, http.StatusOK, utils.DQR{Total: count, Rows: encodes})
 }
 
 // getEncode

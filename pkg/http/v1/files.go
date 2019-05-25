@@ -28,13 +28,19 @@ func getFiles(w http.ResponseWriter, r *http.Request) {
 	params := utils.Vars(r)
 
 	files := make([]models.File, 0)
+	count := 0
 
-	if err := db.Scopes(models.Dyanmic(models.File{}, params)).Find(&files).Error; err != nil {
+	if err := db.Scopes(models.Dynamic(models.File{}, params)).Find(&files).Error; err != nil {
 		respond.With(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	respond.With(w, r, http.StatusOK, files)
+	if err := db.Scopes(models.DynamicTotal(models.File{}, params)).Count(&count).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.With(w, r, http.StatusOK, utils.DQR{Total: count, Rows: files})
 }
 
 // getFile
@@ -140,8 +146,9 @@ func getFileEncodes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := models.File{}
+	count := 0
 
-	if err := db.Preload("Encodes", models.Dyanmic(models.Encode{}, utils.QueryParams(r))).
+	if err := db.Preload("Encodes", models.Dynamic(models.Encode{}, utils.QueryParams(r))).
 		First(&file, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			respond.With(w, r, http.StatusNotFound, errNotFound)
@@ -152,7 +159,13 @@ func getFileEncodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.With(w, r, http.StatusOK, file.Encodes)
+	if err := db.Scopes(models.DynamicTotal(models.Encode{}, params)).
+		Where("file_id = ?", id).Count(&count).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.With(w, r, http.StatusOK, utils.DQR{Total: count, Rows: file.Encodes})
 }
 
 // getFileEncode

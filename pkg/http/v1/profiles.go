@@ -29,13 +29,19 @@ func getProfiles(w http.ResponseWriter, r *http.Request) {
 	params := utils.Vars(r)
 
 	profiles := make([]models.QualityProfile, 0)
+	count := 0
 
-	if err := db.Scopes(models.Dyanmic(models.QualityProfile{}, params)).Find(&profiles).Error; err != nil {
+	if err := db.Scopes(models.Dynamic(models.QualityProfile{}, params)).Find(&profiles).Error; err != nil {
 		respond.With(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	respond.With(w, r, http.StatusOK, profiles)
+	if err := db.Scopes(models.DynamicTotal(models.QualityProfile{}, params)).Count(&count).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.With(w, r, http.StatusOK, utils.DQR{Total: count, Rows: profiles})
 }
 
 // getProfile
@@ -178,8 +184,9 @@ func getProfilePaths(w http.ResponseWriter, r *http.Request) {
 	}
 
 	profile := models.QualityProfile{}
+	count := 0
 
-	if err := db.Preload("Paths", models.Dyanmic(models.Path{}, utils.QueryParams(r))).
+	if err := db.Preload("Paths", models.Dynamic(models.Path{}, utils.QueryParams(r))).
 		First(&profile, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			respond.With(w, r, http.StatusNotFound, errNotFound)
@@ -190,7 +197,13 @@ func getProfilePaths(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.With(w, r, http.StatusOK, profile.Paths)
+	if err := db.Scopes(models.DynamicTotal(models.Path{}, params)).
+		Where("quality_profile_id = ?", id).Count(&count).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.With(w, r, http.StatusOK, utils.DQR{Total: count, Rows: profile.Paths})
 }
 
 // getProfileEncodes
@@ -206,8 +219,9 @@ func getProfileEncodes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	profile := models.QualityProfile{}
+	count := 0
 
-	if err := db.Preload("Encodes", models.Dyanmic(models.Encode{}, utils.QueryParams(r))).
+	if err := db.Preload("Encodes", models.Dynamic(models.Encode{}, utils.QueryParams(r))).
 		First(&profile, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			respond.With(w, r, http.StatusNotFound, errNotFound)
@@ -218,5 +232,11 @@ func getProfileEncodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.With(w, r, http.StatusOK, profile.Encodes)
+	if err := db.Scopes(models.DynamicTotal(models.Encode{}, params)).
+		Where("quality_profile_id = ?", id).Count(&count).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.With(w, r, http.StatusOK, utils.DQR{Total: count, Rows: profile.Encodes})
 }
