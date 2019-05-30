@@ -1,10 +1,14 @@
+//go:generate statik -f -src=../../frontend
 package http
 
 import (
+	_ "encoder-backend/pkg/http/statik"
 	"encoder-backend/pkg/http/utils"
-	"encoder-backend/pkg/http/v1"
+	v1 "encoder-backend/pkg/http/v1"
 	"github.com/ewanwalk/respond"
 	"github.com/gorilla/mux"
+	"github.com/rakyll/statik/fs"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -69,6 +73,23 @@ func (r *router) register() {
 
 	// TODO serve static fs for assets
 	// TODO obtain current "reports" of ongoing encodes
-
 	v1.Register(r.Router)
+
+	r.static()
+}
+
+func (r *router) static() {
+
+	staticFS, err := fs.New()
+	if err != nil {
+		logrus.WithError(err).Fatal("http: failed to use vfs")
+	}
+
+	handler := http.FileServer(staticFS)
+
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", handler))
+
+	r.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler.ServeHTTP(w, r)
+	}))
 }

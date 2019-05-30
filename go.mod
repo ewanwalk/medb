@@ -17,6 +17,7 @@ require (
 	github.com/kalafut/imohash v1.0.0
 	github.com/matryer/respond v1.0.1 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/rakyll/statik v0.1.6
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/sirupsen/logrus v1.4.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
