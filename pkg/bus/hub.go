@@ -60,3 +60,7 @@ func (h *Hub) Subscribe(name string, sub chan Message) {
 		name, sub,
 	}
 }
+
+func (h *Hub) Unsubscribe(name string) {
+
+}

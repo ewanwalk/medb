@@ -22,9 +22,10 @@ const (
 )
 
 const (
-	MessageStart = "worker.start"
-	MessageStop  = "worker.stop"
-	MessageTick  = "worker.tick"
+	MessageStart  = "worker.start"
+	MessageStop   = "worker.stop"
+	MessageTick   = "worker.tick"
+	MessageStatus = "worker.status"
 )
 
 type Worker struct {
@@ -140,7 +141,9 @@ func (w *Worker) Start() {
 				break
 			}
 
-			bus.Broadcast(message.Obj(MessageStart, *w.file))
+			bus.Broadcast(message.Obj(MessageStart, map[string]interface{}{
+				"id": w.file.ID,
+			}))
 
 			err := w.run(ctx)
 			if err != nil {
@@ -156,7 +159,9 @@ func (w *Worker) Start() {
 
 		}
 
-		bus.Broadcast(message.Obj(MessageStop, *w.file))
+		bus.Broadcast(message.Obj(MessageStop, map[string]interface{}{
+			"id": w.file.ID,
+		}))
 
 		w.mtx.Lock()
 		w.file = nil
@@ -217,8 +222,12 @@ func (w *Worker) tick(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(1 * time.Second):
+		case <-time.After(2 * time.Second):
 			if w.status != Running {
+				bus.Broadcast(message.Obj(MessageStatus, map[string]interface{}{
+					"status": "ok",
+					"id":     w.id,
+				}))
 				break
 			}
 
@@ -271,7 +280,13 @@ func (w Worker) report() map[string]interface{} {
 	if w.file != nil {
 		file := *w.file
 		data["report"] = w.job.Report()
-		data["file"] = file
+		data["file"] = map[string]interface{}{
+			"id":   file.ID,
+			"name": file.Name,
+			"encodes": []map[string]interface{}{
+				{"id": file.Encodes[0].ID},
+			},
+		}
 	}
 	w.mtx.Unlock()
 

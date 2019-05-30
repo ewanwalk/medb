@@ -30,6 +30,9 @@ func Register(mux *mux.Router) {
 
 	v1 := mux.PathPrefix("/v1").Subrouter()
 
+	v1.HandleFunc("/ws", webSocket).Methods("GET")
+	v1.HandleFunc("/disk/usage", getDiskUsage).Methods("GET")
+
 	// File related paths
 	files(v1)
 	// Encode related paths

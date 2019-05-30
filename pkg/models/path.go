@@ -13,7 +13,6 @@ const (
 )
 
 const (
-	pathPriorityMax     = 999
 	PathAbsoluteMinimum = 2 << 25 // ~67mb
 )
 
