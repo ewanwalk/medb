@@ -26,21 +26,32 @@ func getDiskUsage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, path := range paths {
+
+		best := disk.PartitionStat{}
+		last := 0
+
 		for _, stat := range stats {
-			if stat.Device == "rootfs" || !strings.Contains(path.Directory, stat.Mountpoint) {
+			if stat.Device == "rootfs" || stat.Device == "/dev/root" {
 				continue
 			}
 
-			devices[stat.Mountpoint] = stat
-			break
+			if !strings.Contains(path.Directory, stat.Mountpoint) {
+				continue
+			}
+
+			if len(stat.Mountpoint) > last {
+				last = len(stat.Mountpoint)
+				best = stat
+			}
 		}
+
+		devices[best.Mountpoint] = best
 	}
 
 	for _, stat := range devices {
 
 		used, err := disk.Usage(stat.Mountpoint)
 		if err != nil {
-
 			continue
 		}
 
@@ -56,4 +67,29 @@ func getDiskUsage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.With(w, r, http.StatusOK, usage)
+}
+
+func getDiskUsageDebug(w http.ResponseWriter, r *http.Request) {
+
+	stats, err := disk.Partitions(true)
+	if err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	usage := make([]disk.UsageStat, len(stats))
+
+	for _, stat := range stats {
+		used, err := disk.Usage(stat.Mountpoint)
+		if err != nil || len(used.Path) == 0 || used.Total == 0 {
+			continue
+		}
+
+		usage = append(usage, *used)
+	}
+
+	respond.With(w, r, http.StatusOK, map[string]interface{}{
+		"_":     stats,
+		"usage": usage,
+	})
 }

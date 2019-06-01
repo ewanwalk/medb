@@ -41,9 +41,10 @@ func (h *Command) defaults() {
 		h.profile.AudioContainer = "copy"
 	}
 
-	if h.profile.AudioBitRate == 0 {
+	// if 0 we are going to let it run auto
+	/*if h.profile.AudioBitRate == 0 {
 		h.profile.AudioBitRate = 128
-	}
+	}*/
 
 	if h.profile.Threads == 0 {
 		h.profile.Threads = 1.0

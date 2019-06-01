@@ -32,6 +32,7 @@ func Register(mux *mux.Router) {
 
 	v1.HandleFunc("/ws", webSocket).Methods("GET")
 	v1.HandleFunc("/disk/usage", getDiskUsage).Methods("GET")
+	v1.HandleFunc("/disk/usage/debug", getDiskUsageDebug).Methods("GET")
 
 	// File related paths
 	files(v1)

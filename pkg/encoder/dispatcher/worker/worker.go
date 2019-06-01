@@ -6,6 +6,7 @@ import (
 	"encoder-backend/pkg/bus/message"
 	"encoder-backend/pkg/encoder/handbrake"
 	"encoder-backend/pkg/encoder/job"
+	"encoder-backend/pkg/file"
 	"encoder-backend/pkg/models"
 	"encoding/json"
 	"github.com/ewanwalk/gorm"
@@ -204,12 +205,15 @@ func (w *Worker) run(ctx context.Context) error {
 			return w.onJobCancel(err)
 		}
 
+		os.Remove(w.job.Output())
+
 		return w.onJobError(err)
 	}
 
 	// move encoded file back
-	err = os.Rename(w.job.Output(), filepath.Join(w.file.Source, w.file.Name))
+	err = file.Rename(w.job.Output(), filepath.Join(w.file.Source, w.file.Name))
 	if err != nil {
+		os.Remove(w.job.Output())
 		return w.onJobError(err)
 	}
 

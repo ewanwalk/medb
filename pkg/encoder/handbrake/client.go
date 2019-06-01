@@ -88,10 +88,14 @@ func (h *Command) parse() {
 		"--encoder", h.profile.Codec,
 		"--quality", fmt.Sprintf("%d", h.profile.QualityLevel),
 		"--aencoder", h.profile.AudioContainer,
-		"-B", fmt.Sprintf("%d", h.profile.AudioBitRate),
+		"--audio-copy-mask", "aac,ac3,dtshd,dts,mp3",
 		"-a", strings.Join(intToSlice(int(h.profile.AudioTracks)), ","),
 		"-s", strings.Join(intToSlice(int(h.profile.SubtitleTracks)), ","),
 	)
+
+	if h.profile.AudioBitRate != 0 {
+		h.args = append(h.args, "-B", fmt.Sprintf("%d", h.profile.AudioBitRate))
+	}
 
 	if len(h.profile.VideoTune) != 0 {
 		h.args = append(h.args, "--encoder-tune", h.profile.VideoTune)
