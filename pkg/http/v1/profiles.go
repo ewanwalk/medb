@@ -80,6 +80,7 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 //    "codec: "x264
 // }
 func updateProfile(w http.ResponseWriter, r *http.Request) {
+
 	params := utils.Vars(r)
 
 	id, ok := params["profile"]

@@ -13,6 +13,7 @@ type Listener struct {
 	*watcher.Watcher
 	*options
 	path models.Path
+	quit chan struct{}
 
 	subscribers []chan<- events.Event
 }
@@ -24,6 +25,7 @@ func New(path models.Path, opts ...Option) *Listener {
 		options: &options{
 			ScanInterval: 500 * time.Millisecond,
 		},
+		quit:    make(chan struct{}),
 		Watcher: watcher.New(),
 	}
 
@@ -57,7 +59,6 @@ func New(path models.Path, opts ...Option) *Listener {
 	}
 
 	// TODO determine if we want to disable "real-time" events and only run periodic scans
-	// TODO determine if we need to do a full scan periodically
 
 	go l.run()
 
@@ -66,6 +67,10 @@ func New(path models.Path, opts ...Option) *Listener {
 		if err != nil {
 			log.WithError(err).Warn("listener: full directory scan failed")
 		}
+
+		// TODO allow this to be set by the library settings
+		go l.periodicScan(30 * time.Minute)
+		//go l.dummyScan()
 	}()
 
 	return l
@@ -84,6 +89,7 @@ func (l *Listener) run() {
 // shuts down the internal event listener
 func (l *Listener) Close() {
 	l.Watcher.Close()
+	close(l.quit)
 }
 
 // listen

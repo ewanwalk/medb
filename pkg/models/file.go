@@ -72,6 +72,10 @@ func (f File) ExistsShallow() bool {
 	return true
 }
 
+func (f File) Filepath() string {
+	return filepath.Join(f.Source, f.Name)
+}
+
 // FileNeedsEncode
 // a gorm scope to find files which still need encoding
 func FileNeedsEncode(db *gorm.DB) *gorm.DB {
@@ -81,12 +85,19 @@ func FileNeedsEncode(db *gorm.DB) *gorm.DB {
 		Where("e.id = (?) OR e.id is null",
 			db.Table("encodes").Select("MAX(id)").Where("file_id = files.id").QueryExpr(),
 		).
+		// This clause must match the models.PathAbleToEncode scope
+		Where("paths.type in (?)", []int{
+			PathTypeStandard,
+		}).
 		Where("files.size >= paths.minimum_file_size").
 		Where("files.status = ?", FileStatusEnabled).
 		Where(
 			"((files.status_encoder = ? AND (files.checksum != e.checksum_at_end OR e.checksum_at_end is null)) OR e.status = ?)",
 			FileEncodeStatusNotDone, EncodeCancelled,
 		).
-		Where("files.status_encoder not in (?)", []int64{FileEncodeStatusPending, FileEncodeStatusErrored}).
+		Where("files.status_encoder not in (?)", []int64{
+			FileEncodeStatusPending,
+			FileEncodeStatusErrored,
+		}).
 		Order("paths.priority DESC")
 }

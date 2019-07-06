@@ -13,6 +13,12 @@ const (
 )
 
 const (
+	PathTypeStandard = iota + 1
+	PathTypePseudo
+	PathTypeOnlyWatch
+)
+
+const (
 	PathAbsoluteMinimum = 2 << 25 // ~67mb
 )
 
@@ -21,7 +27,7 @@ type Path struct {
 	Name      string     `gorm:"type:varchar(255)" json:"name,omitempty"`
 	Directory string     `gorm:"type:varchar(1024);not null" json:"directory,omitempty"`
 	Type      int64      `gorm:"type:int(11);not null;default:1" json:"type,omitempty"`
-	Status    int64      `gorm:"type:int(3);not null;default:1" json:"status,omitempty"`
+	Status    int64      `gorm:"type:int(3);not null;default:1" json:"status"`
 	Priority  int64      `gorm:"type:int(11);not null;default:1" json:"priority,omitempty"`
 	CreatedAt *time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at,omitempty"`
 	UpdatedAt *time.Time `gorm:"type:timestamp" json:"updated_at,omitempty"`
@@ -87,6 +93,25 @@ func (p *Path) IsValid() map[string]string {
 
 // Scopes
 
+// PathEnabled
+// where the path is not deleted
 func PathEnabled(db *gorm.DB) *gorm.DB {
 	return db.Where("status = ?", PathStatusEnabled)
+}
+
+// PathAbleToEncode
+// only paths which are able to be encoded
+func PathAbleToEncode(db *gorm.DB) *gorm.DB {
+	return db.Where("type IN (?)", []int{
+		PathTypeStandard,
+	})
+}
+
+// PathAbleToWatch
+// only paths which are able to be watched
+func PathAbleToWatch(db *gorm.DB) *gorm.DB {
+	return db.Where("type IN (?)", []int{
+		PathTypeStandard,
+		PathTypeOnlyWatch,
+	})
 }

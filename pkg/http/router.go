@@ -89,7 +89,7 @@ func (r *router) static() {
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", handler))
 
-	r.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.PathPrefix("/").Methods("GET").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handler.ServeHTTP(w, r)
 	}))
 }

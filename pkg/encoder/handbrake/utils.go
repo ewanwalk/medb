@@ -1,8 +1,21 @@
 package handbrake
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 func inSliceString(items []string, find string) bool {
+	for _, item := range items {
+		if item == find {
+			return true
+		}
+	}
+
+	return false
+}
+
+func inSliceInt(items []int, find int) bool {
 	for _, item := range items {
 		if item == find {
 			return true
@@ -19,4 +32,15 @@ func intToSlice(val int) (out []string) {
 	}
 
 	return
+}
+
+func repeatInt(val, repeat int) string {
+
+	out := make([]string, 0, repeat)
+	strVal := strconv.Itoa(val)
+	for i := 0; i < repeat; i++ {
+		out = append(out, strVal)
+	}
+
+	return strings.Join(out, ",")
 }

@@ -104,7 +104,10 @@ func (c *Client) load() error {
 
 	paths := make([]models.Path, 0)
 
-	err := c.db.Scopes(models.PathEnabled).Preload("QualityProfile").Find(&paths).Error
+	err := c.db.Scopes(
+		models.PathEnabled,
+		models.PathAbleToWatch,
+	).Preload("QualityProfile").Find(&paths).Error
 	if err != nil {
 		return err
 	}

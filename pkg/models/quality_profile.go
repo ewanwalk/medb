@@ -1,8 +1,10 @@
 package models
 
 import (
+	"encoder-backend/pkg/encoder/handbrake/audio"
 	"encoder-backend/pkg/slice"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -20,7 +22,7 @@ type QualityProfile struct {
 	// The audio container (--aencoder, copy, acc, etc)
 	AudioContainer string `gorm:"type:varchar(512);not null;default:\"copy\"" json:"audio_container,omitempty"`
 	// The audio bitrate (--ab 128)
-	AudioBitRate int64 `gorm:"type:int(11);not null;default:128" json:"audio_bit_rate,omitempty"`
+	AudioBitRate int64 `gorm:"type:int(11);not null;default:0" json:"audio_bit_rate,omitempty"`
 	// The number of audio tracks to keep / encode
 	AudioTracks int64 `gorm:"type:int(2);not null;default:5" json:"audio_tracks,omitempty"`
 	// The compression codec to use (e.g. x264, x265
@@ -93,22 +95,49 @@ func (q *QualityProfile) IsValid() map[string]string {
 	return errs
 }
 
-// TODO default quality profiles
+// AudioCodecMap
+// when a single codec is provided that means convert all tracks to that source
+// when a mapping is provided we will only encode the `src:dst` codecs:
+// - dts:ac3
+// The above will take any dts audio source and convert it to ac3
+// Providing `copy` will keep all audio tracks as is
+// All unknown sources will be converted to aac for compatibility
+func (q *QualityProfile) AudioCodecMap() map[audio.Codec]audio.Codec {
 
-/**
- x264 video tune options
-film
-animation
-*/
+	mapped := make(map[audio.Codec]audio.Codec)
 
-// Movie:
-/*
-AudioContainer ac3
-AudioBitRate   640
-VideoTune      film (dependant on if animated ?)
-*/
-// Show:
-/*
-AudioContainer aac
-AudioBitRate   128
-*/
+	codecs := strings.Split(q.AudioContainer, ",")
+
+	// we aren't mapping anything specific
+	// this means we are only processing 1 codec and all tracks will be encoded to this
+	/*if len(codecs) == 1 {
+		id := audio.CodecFromName(codecs[0])
+		mapped[id] = id
+		return mapped
+	}*/
+
+	for _, c := range codecs {
+
+		// example: copy:aac
+		mapping := strings.Split(c, ":")
+
+		if len(mapping) == 1 {
+			id := audio.CodecFromName(mapping[0])
+			mapped[id] = id
+			continue
+		}
+
+		from := audio.CodecFromName(mapping[0])
+		to := audio.CodecFromName(mapping[1])
+
+		/*if from == audio.CodecCopy {
+			// this signifies that we want to copy
+			mapped[to] = from
+			continue
+		}*/
+
+		mapped[from] = to
+	}
+
+	return mapped
+}

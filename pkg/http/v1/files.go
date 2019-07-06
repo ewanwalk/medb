@@ -4,21 +4,30 @@ import (
 	"encoder-backend/pkg/http/utils"
 	"encoder-backend/pkg/models"
 	"encoding/json"
+	"fmt"
 	"github.com/ewanwalk/gorm"
 	"github.com/ewanwalk/respond"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
+	"sync"
+)
+
+var (
+	fcmtx     = &sync.RWMutex{}
+	fileCache = map[string]*models.File{}
 )
 
 func files(mux *mux.Router) {
 
 	files := mux.PathPrefix("/files").Subrouter()
 	files.HandleFunc("", getFiles).Methods("GET")
+	files.HandleFunc("/prune", pruneFiles).Methods("GET")
 	files.HandleFunc("/{file}", getFile).Methods("GET")
 	files.HandleFunc("/{file}", updateFile).Methods("PUT")
 	files.HandleFunc("/{file}/encodes", getFileEncodes).Methods("GET")
 	files.HandleFunc("/{file}/encodes/{encode}", getFileEncode).Methods("GET")
+	files.HandleFunc("/{file}/video", getFileVideo).Methods("GET")
 }
 
 // getFiles
@@ -199,4 +208,67 @@ func getFileEncode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.With(w, r, http.StatusOK, encode)
+}
+
+// getFileVideo
+// obtain the video source file for this entry, this allows us to stream or download the file directly
+func getFileVideo(w http.ResponseWriter, r *http.Request) {
+
+	params := utils.Vars(r)
+
+	id, ok := params["file"]
+	if !ok {
+		respond.With(w, r, http.StatusBadRequest, errInvalidRequest)
+		return
+	}
+
+	fcmtx.RLock()
+	file, ok := fileCache[id]
+	fcmtx.RUnlock()
+
+	if !ok {
+		file = &models.File{}
+		if err := db.Preload("Path").First(file, id).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				respond.With(w, r, http.StatusNotFound, errNotFound)
+				return
+			}
+
+			respond.With(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		fcmtx.Lock()
+		fileCache[id] = file
+		fcmtx.Unlock()
+	}
+
+	// TODO serve file ourselves
+
+	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", file.Name))
+	http.ServeFile(w, r, file.Filepath())
+}
+
+// pruneFiles
+// attempts to delete all "deleted" files and encodes which no longer have a file associated
+// with it
+func pruneFiles(w http.ResponseWriter, r *http.Request) {
+
+	file := models.File{}
+
+	// TODO add a threshold based on the "updated" date
+
+	if err := db.Delete(file, "status = ?", models.FileStatusDeleted).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	qry := "DELETE `encodes` FROM `encodes` LEFT JOIN files ON files.id = encodes.file_id WHERE files.id IS NULL"
+
+	if err := db.Exec(qry).Error; err != nil {
+		respond.With(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.With(w, r, http.StatusOK, "OK")
 }

@@ -5,8 +5,14 @@ import (
 	"github.com/ewanwalk/respond"
 	"github.com/shirou/gopsutil/disk"
 	"net/http"
+	"sort"
 	"strings"
 )
+
+type DiskUsageReport struct {
+	Device disk.PartitionStat `json:"device"`
+	Usage  disk.UsageStat     `json:"usage"`
+}
 
 func getDiskUsage(w http.ResponseWriter, r *http.Request) {
 
@@ -16,11 +22,11 @@ func getDiskUsage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usage := make([]interface{}, 0)
+	usage := make([]DiskUsageReport, 0)
 	devices := make(map[string]disk.PartitionStat)
 	paths := make([]models.Path, 0)
 
-	if err := db.Scopes(models.PathEnabled).Find(&paths).Error; err != nil {
+	if err := db.Where("status = ? OR type = ?", models.PathStatusEnabled, models.PathTypePseudo).Find(&paths).Error; err != nil {
 		respond.With(w, r, http.StatusInternalServerError, err)
 		return
 	}
@@ -60,11 +66,15 @@ func getDiskUsage(w http.ResponseWriter, r *http.Request) {
 			used.UsedPercent = (float64(used.Used) / float64(used.Total)) * 100
 		}
 
-		usage = append(usage, map[string]interface{}{
-			"device": stat,
-			"usage":  used,
+		usage = append(usage, DiskUsageReport{
+			Device: stat,
+			Usage:  *used,
 		})
 	}
+
+	sort.Slice(usage, func(i, j int) bool {
+		return usage[i].Device.Mountpoint > usage[j].Device.Mountpoint
+	})
 
 	respond.With(w, r, http.StatusOK, usage)
 }
