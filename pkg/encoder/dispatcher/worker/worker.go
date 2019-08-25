@@ -133,7 +133,7 @@ func (w *Worker) Start() {
 
 			backoff(true)
 
-			// TODO more advanced validation of eligibility on the file
+			// TODO more advanced validation of eligibility on the file (e.g. file dimensions)
 			// check to ensure the file still exists
 			if !w.file.Exists() {
 				w.file.Status = models.FileStatusDeleted
@@ -281,7 +281,7 @@ func (w Worker) report() map[string]interface{} {
 	}
 
 	w.mtx.Lock()
-	if w.file != nil {
+	if w.file != nil && len(w.file.Encodes) > 0 {
 		file := *w.file
 		data["report"] = w.job.Report()
 		data["file"] = map[string]interface{}{

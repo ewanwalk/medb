@@ -155,8 +155,6 @@ func (h *Command) parseAudioTracks() {
 			return
 		}
 
-		// TODO remove duplicate tracks when there is just a single codec provided (?)
-
 		var first audio.Codec
 		for _, codec := range mapping {
 			first = codec
@@ -208,12 +206,6 @@ func (h *Command) parseAudioTracks() {
 		if best.AudioCodec().QualityRank() < to.QualityRank() {
 			continue
 		}
-
-		// TODO is this needed?
-		/*if from == audio.CodecCopy {
-			conversion = append(conversion, to.CopyString())
-			continue
-		}*/
 
 		conversion = append(conversion, to.String())
 	}

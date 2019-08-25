@@ -26,12 +26,11 @@ type Title struct {
 	Geometry          Geometry
 	Index             int
 	InterlaceDetected bool
-	//TODO Metadata
-	Name         string
-	Path         string
-	Playlist     int
-	SubtitleList []SubtitleTrack
-	Type         int
+	Name              string
+	Path              string
+	Playlist          int
+	SubtitleList      []SubtitleTrack
+	Type              int
 }
 
 type AudioTrack struct {

@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoder-backend/pkg/config"
+	"encoder-backend/pkg/models"
 	"errors"
 	"fmt"
 	"github.com/ewanwalk/gorm"
@@ -67,7 +68,6 @@ func Connect() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// TODO determine if we prefer this
 	db.SetLogger(log.StandardLogger())
 
 	db.DB().SetMaxOpenConns(25)
@@ -87,7 +87,7 @@ func CreateDSN(username, password, hostname, database, port string) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4&collation=utf8mb4_unicode_ci", username, password, hostname, port, database)
 }
 
-func Migrate(models ...interface{}) {
+func Migrate(mdls ...interface{}) {
 	if global == nil {
 		_, err := Connect()
 		if err != nil {
@@ -95,5 +95,8 @@ func Migrate(models ...interface{}) {
 		}
 	}
 
-	global.AutoMigrate(models...)
+	global.AutoMigrate(mdls...)
+
+	global.Model(models.Revision{}).AddIndex("idx_file_id", "file_id")
+	global.Model(models.Revision{}).AddIndex("idx_path_id", "path_id")
 }

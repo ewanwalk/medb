@@ -21,3 +21,6 @@ vet:
 
 test:
 	go test -race -v $$(go list ./... | grep -v /vendor/)
+
+hash:
+	go build -o hash cmd/hash/main.go

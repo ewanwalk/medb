@@ -62,6 +62,6 @@ func preload() {
 		models.Path{},
 		models.QualityProfile{},
 		models.Setting{},
+		models.Revision{},
 	)
-
 }

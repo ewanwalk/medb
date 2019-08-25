@@ -35,8 +35,9 @@ type File struct {
 	UpdatedAt     *time.Time `gorm:"type:timestamp;default:CURRENT_TIMESTAMP" json:"updated_at,omitempty"`
 
 	// Relationships
-	Encodes []Encode `json:"encodes,omitempty"`
-	Path    *Path    `gorm:"association_autoupdate:false" json:"path,omitempty"`
+	Encodes   []Encode   `json:"encodes,omitempty"`
+	Path      *Path      `gorm:"association_autoupdate:false" json:"path,omitempty"`
+	Revisions []Revision `json:"revisions,omitempty"`
 }
 
 // CurrentChecksum
@@ -74,6 +75,23 @@ func (f File) ExistsShallow() bool {
 
 func (f File) Filepath() string {
 	return filepath.Join(f.Source, f.Name)
+}
+
+// Matches
+// whether the source file matches the provided one
+func (f File) Matches(file *File) bool {
+
+	// if the checksum match we can pretty much guarantee they are the same file
+	if f.Checksum == file.Checksum {
+		return true
+	}
+
+	// if the names match we can probably assume that they are the same (?)
+	if f.Name == file.Name {
+		return true
+	}
+
+	return false
 }
 
 // FileNeedsEncode

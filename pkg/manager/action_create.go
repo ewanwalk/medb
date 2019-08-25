@@ -10,9 +10,14 @@ import (
 
 // TODO figure out if we should use the path id
 type findKey struct {
-	Name     string
-	Checksum string
+	Name string
+	//Checksum string
 	//PathID   int64
+}
+
+type update struct {
+	old models.File
+	new models.File
 }
 
 var (
@@ -44,7 +49,7 @@ func (c *Client) create(list ...events.Event) error {
 		// the files to be created (do not currently exist)
 		creates = make([]interface{}, 0)
 		// the files to be updated to "exists" from "does not exist"
-		updates       = make([]models.File, 0)
+		updates       = make([]update, 0)
 		created int64 = 0 // count: files created
 		updated       = 0 // count: files updated
 	)
@@ -72,7 +77,7 @@ func (c *Client) create(list ...events.Event) error {
 
 			}
 
-			c.db.Where("name = ? AND checksum = ?", file.Name, file.Checksum).First(&found)
+			c.db.Where("name = ?", file.Name /*file.Checksum*/).First(&found)
 			if found.ID == 0 {
 				creates = append(creates, file)
 				continue
@@ -83,7 +88,10 @@ func (c *Client) create(list ...events.Event) error {
 				continue
 			}
 
-			updates = append(updates, *file)
+			updates = append(updates, update{
+				old: found,
+				new: *file,
+			})
 
 		}
 	} else {
@@ -95,7 +103,7 @@ func (c *Client) create(list ...events.Event) error {
 		mappedFinds := make(map[findKey]models.File, len(finds))
 		for _, file := range finds {
 			mappedFinds[findKey{
-				file.Name, file.Checksum, //file.PathID,
+				file.Name, //file.Checksum, //file.PathID,
 			}] = file
 		}
 
@@ -111,7 +119,7 @@ func (c *Client) create(list ...events.Event) error {
 			}
 
 			found, ok := mappedFinds[findKey{
-				file.Name, file.Checksum, //file.PathID,
+				file.Name, //file.Checksum, //file.PathID,
 			}]
 			if !ok {
 				creates = append(creates, file)
@@ -123,7 +131,10 @@ func (c *Client) create(list ...events.Event) error {
 				continue
 			}
 
-			updates = append(updates, *file)
+			updates = append(updates, update{
+				old: found,
+				new: *file,
+			})
 		}
 	}
 
@@ -141,17 +152,33 @@ func (c *Client) create(list ...events.Event) error {
 	// lets update individually
 	if len(updates) != 0 {
 
-		for _, file := range updates {
+		for _, update := range updates {
 
-			err := c.db.Model(file).Updates(map[string]interface{}{
-				"path_id":        file.PathID,
-				"source":         file.Source,
-				"name":           file.Name,
+			err := c.db.Model(update.new).Updates(map[string]interface{}{
+				"path_id":        update.new.PathID,
+				"source":         update.new.Source,
+				"name":           update.new.Name,
+				"size":           update.new.Size,
+				"checksum":       update.new.Checksum,
 				"status":         models.FileStatusEnabled,
-				"status_encoder": file.StatusEncoder,
+				"status_encoder": update.new.StatusEncoder,
 			}).Error
 			if err != nil {
 				return err
+			}
+
+			if update.new.Checksum != update.old.Checksum {
+				// we need to insert a revision if there is an applicable update
+				err = c.db.Model(models.Revision{}).Create(&models.Revision{
+					FileID:   update.old.ID,
+					PathID:   update.old.PathID,
+					Checksum: update.old.Checksum,
+					Size:     update.old.Size,
+					Encoded:  update.old.StatusEncoder,
+				}).Error
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -169,11 +196,12 @@ func updateAndCompare(fromScan bool, file, found *models.File) error {
 
 	needsClear := fromScan && file.StatusEncoder == models.FileEncodeStatusRunning || file.StatusEncoder == models.FileEncodeStatusPending
 
-	if found.Status == models.FileStatusEnabled && found.Source == file.Source && !needsClear {
+	if found.Checksum == file.Checksum && found.Status == models.FileStatusEnabled && found.Source == file.Source && !needsClear {
 		return errors.New("create.updateandcompare: update not needed")
 	}
 
-	if found.Source != file.Source && found.ExistsShallow() {
+	// When a files paths do not match but the destination
+	if found.PathID != file.PathID && found.ExistsShallow() {
 		log.WithFields(log.Fields{
 			"file": file.Name,
 			"path": file.Source,
@@ -182,6 +210,11 @@ func updateAndCompare(fromScan bool, file, found *models.File) error {
 	}
 
 	file.StatusEncoder = found.StatusEncoder
+
+	// TODO check revisions if we've seen this file in the past
+	if found.Checksum != file.Checksum {
+		file.StatusEncoder = models.FileEncodeStatusNotDone
+	}
 
 	// clear any potential issues with encode status
 	if needsClear {

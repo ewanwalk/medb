@@ -70,7 +70,3 @@ func (c *Client) spawn() {
 	}
 
 }
-
-// TODO get un-encoded files from the database
-
-// TODO create workers based on the allowed concurrency

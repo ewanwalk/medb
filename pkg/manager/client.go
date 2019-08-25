@@ -93,8 +93,9 @@ func (c *Client) listen() {
 		switch ev.Type() {
 		case events.Scan:
 			c.queues[ev.Type()].Enqueue(ev)
-		case events.Create:
-			err = c.create(ev)
+		// This has been disabled due to wanting "creates" to come from scans instead of "real-time"
+		//case events.Create:
+		//	err = c.create(ev)
 		case events.Delete:
 			err = c.delete(ev)
 		case events.Rename:

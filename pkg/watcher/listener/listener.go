@@ -103,7 +103,11 @@ func (l *Listener) listen() {
 				continue
 			}
 
-			if !l.IsAllowedExtension(ev.Name()) {
+			if !l.IsAllowedExtension(ev.FileInfo.Name()) {
+				continue
+			}
+
+			if ev.New != nil && !l.IsAllowedExtension(ev.New.Name()) {
 				continue
 			}
 

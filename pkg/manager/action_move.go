@@ -34,7 +34,7 @@ func (c *Client) move(list ...events.Event) error {
 		temp := models.File{}
 
 		c.db.Select("*").Where(&models.File{
-			Name: file.Name, Checksum: file.Checksum,
+			Name: file.Name, // Checksum: file.Checksum,
 		}).First(&temp)
 
 		temp.PathID = file.PathID

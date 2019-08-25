@@ -1,6 +1,5 @@
 package bus
 
-// TODO mini pub-sub type system
 var (
 	std = New()
 )

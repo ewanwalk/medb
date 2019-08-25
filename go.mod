@@ -20,5 +20,6 @@ require (
 	github.com/rakyll/statik v0.1.6
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/sirupsen/logrus v1.4.1
+	github.com/stretchr/testify v1.2.2
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )

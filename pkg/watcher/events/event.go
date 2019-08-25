@@ -29,6 +29,8 @@ type generic struct {
 
 func (t Type) String() string {
 	switch t {
+	case Scan:
+		return "scan"
 	case Create:
 		return "create"
 	case Move:
