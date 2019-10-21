@@ -9,6 +9,8 @@ binary `HandBrakeCLI` as indicated by the default install:
 sudo apt install handbrake-cli
 ```
 
+Handbrake must have the `scan` option (latest versions)
+
 #### Database
 
 The following database servers are supported:
@@ -17,3 +19,6 @@ The following database servers are supported:
 - MariaDB
 
 Support for a sqlite3 database may be added in the future should demand warrant it.
+
+#### Configuration
+All configuration is handled via. the `.env` file, copy the `.env.example` file and fill it out accordingly
