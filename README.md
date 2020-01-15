@@ -22,3 +22,30 @@ The following database servers are supported:
 
 #### Configuration
 All configuration is handled via. the `.env` file, copy the `.env.example` file and fill it out accordingly
+
+#### Build
+Using the included makefile
+```bash
+make build
+```
+
+Otherwise
+```bash
+VERSION=0.1.0
+BUILD=$(shell git rev-parse HEAD)
+TARGET=main
+LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.Build=$(BUILD)"
+
+go build $(LDFLAGS) -o $(TARGET) cmd/medb/main.go
+```
+
+#### Run
+1) Ensure the binary is executable:
+```bash
+chmod +x main
+```
+
+2) Run the binary!
+```bash
+./main
+```
