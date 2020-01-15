@@ -1,4 +1,6 @@
-# Encoder Backend
+# Media Encoding Dashboard
+The goal of this application is to uniformly encode media libraries to be served through whatever applicable means (Plex / Other). Libraries are independantly configurable
+which allows you to set quality standards however you would like!
 
 ### Dependencies
 
@@ -17,8 +19,6 @@ The following database servers are supported:
 
 - MySQL 5.7+
 - MariaDB
-
-Support for a sqlite3 database may be added in the future should demand warrant it.
 
 #### Configuration
 All configuration is handled via. the `.env` file, copy the `.env.example` file and fill it out accordingly
