@@ -2,6 +2,10 @@
 The goal of this application is to uniformly encode media libraries to be served through whatever applicable means (Plex / Other). Libraries are independantly configurable
 which allows you to set quality standards however you would like!
 
+### Preview
+
+![dashboard preview](https://i.imgur.com/9R7RDTa.png "dashboard preview")
+
 ### Dependencies
 
 #### HandBrake
